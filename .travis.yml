@@ -13,5 +13,5 @@ jobs:
     - stage: deploy
       script:
         - |
-          R -e 'if(require("aitoaEvaluate")) { remove.packages("aitoaEvaluate"); }; r <- devtools::install_github("thomasWeise/aitoaEvaluate"); if(r) { cat("OK\n"); q(save="no", status=0); } else { cat("error: ", r, "\n", sep="", collapse=""); q(save="no", status=1); }'
+          R -e 'if(require("aitoaEvaluate")) { remove.packages("aitoaEvaluate"); }; r <- devtools::install_github("thomasWeise/aitoaEvaluate"); if(r == "aitoaEvaluate") { cat("OK\n"); q(save="no", status=0); } else { cat("error: ", r, "\n", sep="", collapse=""); q(save="no", status=1); }'
 
