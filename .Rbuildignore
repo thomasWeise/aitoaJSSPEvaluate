@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+results
+evaluation
+^.*\.jar$
+_r_old
