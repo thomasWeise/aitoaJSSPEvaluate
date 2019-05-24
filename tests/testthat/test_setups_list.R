@@ -1,13 +1,9 @@
 library("aitoaEvaluate");
 library("testthat");
-context("aitoa.load.log.file");
+context("aitoa.setups.list");
 
-dir <- tempfile();
-dir.create(dir);
-config <- aitoa.config(dir.results=dir);
-
-.make.log.file <- function(values, consumedFEs, consumedTime) {
-  file <- tempfile(tmpdir = dir);
+.make.log.file <- function(dir, values, consumedFEs, consumedTime) {
+  file <- tempfile(tmpdir = dir, fileext = ".txt");
   writeLines(text=c(
     "",
     "# ALGORITHM_SETUP",
@@ -194,115 +190,81 @@ config <- aitoa.config(dir.results=dir);
   return(file);
 }
 
+.make.log.file.rnd <- function(dir) {
+  consumedFEs <- as.integer(runif(n=1L, min=100, max=2000000));
+  consumedTime <- as.integer(runif(n=1L, min=100000, max=2000000));
 
-test_that("Test aitoa.load.log.file 1", {
-  file <- .make.log.file(list(c(11, 1, 33)),
-                         1000,
-                         180000);
-  data <- aitoa.load.log.file(file, config=config);
-  unlink(file);
-  expect_false(file.exists(file));
+  t <- sort(unique(as.integer(runif(n=as.integer(runif(n=1, min=1L, max=100L)), min=1L, max=consumedTime))));
+  fes <- sort(unique(as.integer(runif(n=as.integer(runif(n=1, min=1L, max=length(t))), min=1L, max=consumedFEs))));
+  f <- unique(as.integer(runif(n=as.integer(runif(n=1, min=1L, max=length(fes))), min=100L, max=3425532L)));
 
-  expect_equal(nrow(data), 2L);
-  expect_identical(colnames(data), c("t", "fes", "f"));
-  expect_true(is.integer(data$f));
-  expect_true(is.integer(data$fes));
-  expect_true(is.integer(data$t));
+  t <- t[1L:length(f)];
+  fes <- fes[1L:length(f)];
+  f <- f[order(-f)];
 
-  expect_identical(as.list(data[1L,]), list(t=33L,     fes=1L,    f=11L));
-  expect_identical(as.list(data[2L,]), list(t=180000L, fes=1000L, f=11L));
+  return(.make.log.file(dir, values=lapply(seq_along(f), function(i) c(f[[i]], fes[[i]], t[[i]])),
+                        consumedFEs = consumedFEs+1L, consumedTime=consumedTime+1L));
+}
+
+test_that("Test aitoa.setups.list", {
+  root <- tempfile();
+  dir.create(root, recursive=TRUE);
+  results <- tempfile(tmpdir = root);
+  dir.create(results, recursive=TRUE);
+  eval <- tempfile(tmpdir = root);
+  dir.create(eval, recursive=TRUE);
+
+
+  algos <- c("a", "b", "c");
+  insts <- c("1", "2", "3");
+
+  config <- aitoa.config(dir.results=results, dir.evaluation = eval,
+                         num.runs = 5L, num.instances = length(insts));
+
+  for(algo in algos) {
+    for(inst in insts) {
+      d <- file.path(results, algo, inst);
+      dir.create(d, recursive = TRUE);
+
+      for(i in 1L:config$num.runs) {
+        f <- .make.log.file.rnd(d);
+        stopifnot(file.exists(f),
+                  startsWith(f, d));
+      }
+    }
+  }
+
+  algo <- "x";
+  for(inst in c(insts, "q")) {
+    d <- file.path(results, algo, inst);
+    dir.create(d, recursive = TRUE);
+
+    for(i in 1L:config$num.runs) {
+      f <- .make.log.file.rnd(d);
+      stopifnot(file.exists(f),
+                startsWith(f, d));
+    }
+  }
+
+  algo <- "y";
+  for(inst in insts[2L:length(insts)]) {
+    d <- file.path(results, algo, inst);
+    dir.create(d, recursive = TRUE);
+
+    for(i in 1L:config$num.runs) {
+      f <- .make.log.file.rnd(d);
+      stopifnot(file.exists(f),
+                startsWith(f, d));
+    }
+  }
+
+  setups <- aitoa.setups.list(config=config);
+  expect_identical(setups, c("a/1", "a/2", "a/3",
+                             "b/1", "b/2", "b/3",
+                             "c/1", "c/2", "c/3"));
+
+  unlink(root, force=TRUE, recursive=TRUE);
+  expect_false(dir.exists(root));
+
 })
 
-
-test_that("Test aitoa.load.log.file 2", {
-  file <- .make.log.file(list(c(11, 1, 33),
-                              c( 9, 2, 35)),
-                         1000,
-                         180000);
-  data <- aitoa.load.log.file(file, config=config);
-  unlink(file);
-  expect_false(file.exists(file));
-
-  expect_equal(nrow(data), 3L);
-  expect_identical(colnames(data), c("t", "fes", "f"));
-  expect_true(is.integer(data$f));
-  expect_true(is.integer(data$fes));
-  expect_true(is.integer(data$t));
-
-  expect_identical(as.list(data[1L,]), list(t=33L,     fes=1L,    f=11L));
-  expect_identical(as.list(data[2L,]), list(t=35L,     fes=2L,    f=9L));
-  expect_identical(as.list(data[3L,]), list(t=180000L, fes=1000L, f=9L));
-})
-
-
-
-test_that("Test aitoa.load.log.file 3", {
-  file <- .make.log.file(list(c(11, 1, 33),
-                              c( 9, 2, 35),
-                              c( 8, 1000, 180000)),
-                         1000,
-                         180000);
-  data <- aitoa.load.log.file(file, config=config);
-  unlink(file);
-  expect_false(file.exists(file));
-
-  expect_equal(nrow(data), 3L);
-  expect_identical(colnames(data), c("t", "fes", "f"));
-  expect_true(is.integer(data$f));
-  expect_true(is.integer(data$fes));
-  expect_true(is.integer(data$t));
-
-  expect_identical(as.list(data[1L,]), list(t=33L,     fes=1L,    f=11L));
-  expect_identical(as.list(data[2L,]), list(t=35L,     fes=2L,    f=9L));
-  expect_identical(as.list(data[3L,]), list(t=180000L, fes=1000L, f=8L));
-})
-
-
-
-test_that("Test aitoa.load.log.file 4", {
-  file <- .make.log.file(list(c(11, 1, 33),
-                              c( 9, 2, 35),
-                              c( 8, 1000, 180000)),
-                         1000,
-                         180003);
-  data <- aitoa.load.log.file(file, config=config);
-  unlink(file);
-  expect_false(file.exists(file));
-
-  expect_equal(nrow(data), 3L);
-  expect_identical(colnames(data), c("t", "fes", "f"));
-  expect_true(is.integer(data$f));
-  expect_true(is.integer(data$fes));
-  expect_true(is.integer(data$t));
-
-  expect_identical(as.list(data[1L,]), list(t=33L,     fes=1L,    f=11L));
-  expect_identical(as.list(data[2L,]), list(t=35L,     fes=2L,    f=9L));
-  expect_identical(as.list(data[3L,]), list(t=180000L, fes=1000L, f=8L));
-})
-
-
-test_that("Test aitoa.load.log.file 5", {
-  file <- .make.log.file(list(c(11, 1, 33),
-                              c( 9, 2, 35),
-                              c( 8, 1000, 180000)),
-                         1002,
-                         180003);
-  data <- aitoa.load.log.file(file, config=config);
-  unlink(file);
-  expect_false(file.exists(file));
-
-  expect_equal(nrow(data), 4L);
-  expect_identical(colnames(data), c("t", "fes", "f"));
-  expect_true(is.integer(data$f));
-  expect_true(is.integer(data$fes));
-  expect_true(is.integer(data$t));
-
-  expect_identical(as.list(data[1L,]), list(t=33L,     fes=1L,    f=11L));
-  expect_identical(as.list(data[2L,]), list(t=35L,     fes=2L,    f=9L));
-  expect_identical(as.list(data[3L,]), list(t=180000L, fes=1000L, f=8L));
-  expect_identical(as.list(data[4L,]), list(t=180003L, fes=1002L, f=8L));
-})
-
-
-unlink(dir, force=TRUE, recursive=TRUE);
-expect_false(dir.exists(dir));

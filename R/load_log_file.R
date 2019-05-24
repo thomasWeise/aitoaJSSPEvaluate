@@ -2,19 +2,27 @@
 #' @title Load a Single Log File
 #' @description Load a log file and return the results as a data frame.
 #' @param file the log file
+#' @param config the configuration
 #' @return a data frame with the columns \code{t} (time in ms), \code{fes}
 #'   (function evaluations), and \code{f} (objective value), all of which are
 #'   integer valued
-#' @include utils.R
-#' @export load.log.file
-load.log.file <- function(file) {
+#' @include config.R
+#' @seealso aitoa.config
+#' @export aitoa.load.log.file
+aitoa.load.log.file <- function(file,
+                                config=aitoa.config()) {
   stopifnot(is.character(file));
 
-  file <- normalizePath(file, mustWork=TRUE);
+  if(file.exists(file)) {
+    file <- normalizePath(file, mustWork=TRUE);
+  } else {
+    file <- normalizePath(file.path(config$dir.results, file), mustWork=TRUE);
+  }
   file <- force(file);
-  stopifnot(file.exists(file));
+  stopifnot(file.exists(file),
+            file.size(file) > 100L);
 
-  .logger("now loading file '", file, "'.");
+  config$logger("now loading file '", file, "'.");
 
   # read file as text file, one line = one element
   data <- readLines(con=file, warn=FALSE);
@@ -41,14 +49,10 @@ load.log.file <- function(file) {
             is.finite(end));
 
   # load data as CSV
-  data <- c("f;fes;t", data[(start+2L):(end-1L)]);
-  data <- read.csv(text=data, sep=";", header=TRUE);
-  data <- unique(data);
-
-  # get t=time, f=objective value, fes=fes
-  t <- as.integer(data$t);
-  f <- as.integer(data$f);
-  fes <- as.integer(data$fes);
+  data <- strsplit(data[(start+2L):(end-1L)], ";", fixed=TRUE);
+  f   <- as.integer(vapply(data, `[[`, "", 1L));
+  fes <- as.integer(vapply(data, `[[`, "", 2L));
+  t   <- as.integer(vapply(data, `[[`, "", 3L));
   rm(data);
 
   stopifnot(length(unique(fes)) == length(fes));

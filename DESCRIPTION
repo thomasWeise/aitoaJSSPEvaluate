@@ -15,5 +15,7 @@ ByteCompile: true
 LazyData: true
 RoxygenNote: 6.1.1
 Collate: 
-    'utils.R'
+    'config.R'
     'load_log_file.R'
+    'utils.R'
+    'setups_list.R'
