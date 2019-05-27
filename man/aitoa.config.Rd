@@ -7,7 +7,7 @@
 \usage{
 aitoa.config(dir.results = "./results",
   dir.evaluation = "./evaluation", logger = .logger,
-  num.instances = 4L, num.runs = 101L)
+  min.instances = 4L, min.runs = 101L)
 }
 \arguments{
 \item{dir.results}{the directory where the results are expected}
@@ -17,9 +17,9 @@ written to}
 
 \item{logger}{the logger function}
 
-\item{num.instances}{the expected number of instances}
+\item{min.instances}{the minimum number of instances}
 
-\item{num.runs}{the expected number of runs per instance and algorithm}
+\item{min.runs}{the minimum number of runs per instance and algorithm}
 }
 \value{
 the configuration object

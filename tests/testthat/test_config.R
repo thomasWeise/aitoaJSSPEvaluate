@@ -12,8 +12,8 @@ test_that("Test aitoa.config", {
   expect_identical(names(config), c("dir.results",
                                     "dir.evaluation",
                                     "logger",
-                                    "num.instances",
-                                    "num.runs"));
+                                    "min.instances",
+                                    "min.runs"));
 
   expect_length(config, 5L);
   expect_identical(config[[1L]], dir);
@@ -22,7 +22,7 @@ test_that("Test aitoa.config", {
   expect_true(is.function(config$logger));
   config$logger("this ", "is", " a", " test");
   expect_true(is.integer(config[[4L]]));
-  expect_gt(config$num.instances, 0L);
+  expect_gt(config$min.instances, 0L);
   expect_true(is.integer(config[[5L]]));
-  expect_gt(config$num.runs, 0L);
+  expect_gt(config$min.runs, 0L);
 })

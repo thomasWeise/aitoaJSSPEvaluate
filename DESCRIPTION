@@ -18,4 +18,4 @@ Collate:
     'config.R'
     'load_log_file.R'
     'utils.R'
-    'setups_list.R'
+    'setups.R'

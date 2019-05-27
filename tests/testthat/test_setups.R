@@ -1,9 +1,9 @@
 library("aitoaEvaluate");
 library("testthat");
-context("aitoa.setups.list");
+context("aitoa.setups.frame");
 
-.make.log.file <- function(dir, values, consumedFEs, consumedTime) {
-  file <- tempfile(tmpdir = dir, fileext = ".txt");
+.make.log.file <- function(dir, values, consumedFEs, consumedTime, algo, inst, seed) {
+  file <- file.path(tmpdir = dir, paste(algo, "_", inst, "_", seed, ".txt", sep="", collapse=""));
   writeLines(text=c(
     "",
     "# ALGORITHM_SETUP",
@@ -190,7 +190,7 @@ context("aitoa.setups.list");
   return(file);
 }
 
-.make.log.file.rnd <- function(dir) {
+.make.log.file.rnd <- function(dir,  algo, inst, seed) {
   consumedFEs <- as.integer(runif(n=1L, min=100, max=2000000));
   consumedTime <- as.integer(runif(n=1L, min=100000, max=2000000));
 
@@ -203,10 +203,11 @@ context("aitoa.setups.list");
   f <- f[order(-f)];
 
   return(.make.log.file(dir, values=lapply(seq_along(f), function(i) c(f[[i]], fes[[i]], t[[i]])),
-                        consumedFEs = consumedFEs+1L, consumedTime=consumedTime+1L));
+                        consumedFEs = consumedFEs+1L, consumedTime=consumedTime+1L,
+                        algo=algo, inst=inst, seed=seed));
 }
 
-test_that("Test aitoa.setups.list", {
+test_that("Test aitoa.setups.frame", {
   root <- tempfile();
   dir.create(root, recursive=TRUE);
   results <- tempfile(tmpdir = root);
@@ -219,15 +220,19 @@ test_that("Test aitoa.setups.list", {
   insts <- c("1", "2", "3");
 
   config <- aitoa.config(dir.results=results, dir.evaluation = eval,
-                         num.runs = 5L, num.instances = length(insts));
+                         min.runs = 5L, min.instances = length(insts));
+  repeat {
+    seeds <- unique(as.integer(runif(n=config$min.runs, min=1L, max=120034L)));
+    if(length(seeds) == config$min.runs) { break; }
+  }
 
   for(algo in algos) {
     for(inst in insts) {
       d <- file.path(results, algo, inst);
       dir.create(d, recursive = TRUE);
 
-      for(i in 1L:config$num.runs) {
-        f <- .make.log.file.rnd(d);
+      for(i in seeds) {
+        f <- .make.log.file.rnd(d, algo, inst, i);
         stopifnot(file.exists(f),
                   startsWith(f, d));
       }
@@ -239,8 +244,8 @@ test_that("Test aitoa.setups.list", {
     d <- file.path(results, algo, inst);
     dir.create(d, recursive = TRUE);
 
-    for(i in 1L:config$num.runs) {
-      f <- .make.log.file.rnd(d);
+    for(i in seeds) {
+      f <- .make.log.file.rnd(d, algo, inst, i);
       stopifnot(file.exists(f),
                 startsWith(f, d));
     }
@@ -251,17 +256,38 @@ test_that("Test aitoa.setups.list", {
     d <- file.path(results, algo, inst);
     dir.create(d, recursive = TRUE);
 
-    for(i in 1L:config$num.runs) {
-      f <- .make.log.file.rnd(d);
+    for(i in seeds) {
+      f <- .make.log.file.rnd(d, algo, inst, i);
       stopifnot(file.exists(f),
                 startsWith(f, d));
     }
   }
 
-  setups <- aitoa.setups.list(config=config);
-  expect_identical(setups, c("a/1", "a/2", "a/3",
-                             "b/1", "b/2", "b/3",
-                             "c/1", "c/2", "c/3"));
+  algo <- "z";
+  for(inst in c("v", insts)) {
+    d <- file.path(results, algo, inst);
+    dir.create(d, recursive = TRUE);
+
+    for(i in c(max(seeds)+1L, seeds[2L:length(seeds)])) {
+      f <- .make.log.file.rnd(d, algo, inst, i);
+      stopifnot(file.exists(f),
+                startsWith(f, d));
+    }
+  }
+
+  setups <- aitoa.setups.frame(config=config);
+  expect_identical(unique(as.character(setups$algorithm)),
+                   c("a", "b", "c", "x"));
+
+
+  expect_identical(unique(as.character(setups$instance)),
+                   c("1", "2", "3"));
+
+  expect_identical(unique(as.character(setups$dir)),
+                   c("a/1", "a/2", "a/3",
+                     "b/1", "b/2", "b/3",
+                     "c/1", "c/2", "c/3",
+                     "x/1", "x/2", "x/3"));
 
   unlink(root, force=TRUE, recursive=TRUE);
   expect_false(dir.exists(root));

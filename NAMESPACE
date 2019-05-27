@@ -2,4 +2,4 @@
 
 export(aitoa.config)
 export(aitoa.load.log.file)
-export(aitoa.setups.list)
+export(aitoa.setups.frame)

@@ -13,25 +13,25 @@
 #' @param dir.evaluation the directory where the evaluation data should be
 #'   written to
 #' @param logger the logger function
-#' @param num.instances the expected number of instances
-#' @param num.runs the expected number of runs per instance and algorithm
+#' @param min.instances the minimum number of instances
+#' @param min.runs the minimum number of runs per instance and algorithm
 #' @return the configuration object
 #' @export aitoa.config
 aitoa.config <- function(dir.results="./results",
                          dir.evaluation="./evaluation",
                          logger=.logger,
-                         num.instances=4L,
-                         num.runs=101L) {
+                         min.instances=4L,
+                         min.runs=101L) {
 
   stopifnot(is.character(dir.results),
             is.character(dir.evaluation),
             is.function(logger),
-            is.integer(num.instances),
-            is.integer(num.runs),
-            num.instances > 0L,
-            is.finite(num.instances),
-            num.runs > 0L,
-            is.finite(num.runs));
+            is.integer(min.instances),
+            is.integer(min.runs),
+            min.instances > 0L,
+            is.finite(min.instances),
+            min.runs > 0L,
+            is.finite(min.runs));
 
   dir.results <- normalizePath(dir.results, mustWork=TRUE);
   stopifnot(dir.exists(dir.results));
@@ -42,8 +42,8 @@ aitoa.config <- function(dir.results="./results",
   config <- list(dir.results = dir.results,
                  dir.evaluation = dir.evaluation,
                  logger=logger,
-                 num.instances=num.instances,
-                 num.runs=num.runs);
+                 min.instances=min.instances,
+                 min.runs=min.runs);
 
   config <- force(config);
   return(config);
