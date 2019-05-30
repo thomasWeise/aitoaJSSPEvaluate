@@ -44,7 +44,9 @@
 .algo.max.tree.depth <- "algo.max.tree.depth";
 
 .make.list <- function(keys, ...) {
-  setNames(list(...), as.character(keys));
+  r <- list(...);
+  names(r) <- as.character(keys);
+  return(r);
 }
 
 .parse.double <- function(s) {

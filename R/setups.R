@@ -31,6 +31,7 @@
 #' @include utils.R
 #' @include config.R
 #' @export aitoa.setups.frame
+#' @importFrom utils read.csv write.csv
 aitoa.setups.frame <- function(config=aitoa.config()) {
   file <- file.path(.dir.eval(config=config), "dirs.txt");
 

@@ -1,6 +1,7 @@
 # Create the Data of this Package
 
 library(usethis);
+library(utils);
 
 # setup directories
 dir.data.raw <- dirname(sys.frame(1)$ofile);

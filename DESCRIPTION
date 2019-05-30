@@ -1,12 +1,13 @@
 Package: aitoaEvaluate
 Type: Package
-Title: An R Package for Evaluating the aitoa Results.
+Title: An R Package for Evaluating the aitoa Results
 Version: 0.8.0
 Author: Dr. Thomas Weise <tweise@hfuu.edu.cn>
 Maintainer: Dr. Thomas Weise <tweise@hfuu.edu.cn>
 Description: With this package, we evaluate the JSSP results.
 License: GPL-3
 Encoding: UTF-8
+Imports: utils (>= 3.5.2)
 Suggests: devtools (>= 2.0.2),
           roxygen2 (>= 6.1.1),
           testthat (>= 2.1.1),
