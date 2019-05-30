@@ -3,6 +3,7 @@
 export(aitoa.algorithm.setup)
 export(aitoa.algorithm.setup.ea)
 export(aitoa.algorithm.setup.eda)
+export(aitoa.algorithm.setup.gp)
 export(aitoa.algorithm.setup.hc)
 export(aitoa.algorithm.setup.hc2)
 export(aitoa.algorithm.setup.heda)

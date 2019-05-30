@@ -1,6 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-results
-evaluation
-^.*\.jar$
-_r_old
+LICENSE
+README.md
+.travis.yml
+data-raw
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata

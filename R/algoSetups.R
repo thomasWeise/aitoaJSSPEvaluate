@@ -12,32 +12,36 @@
 
 .algo.representation <- "algo.representation";
 .algo.representation.default <- "default";
+.algo.representation.tree <- "tree";
 
-.algo.unaryOperator <- "algo.unaryOperator";
-.algo.binaryOperator <- "algo.binaryOperator";
+.algo.operator.unary <- "algo.operator.unary";
+.algo.operator.unary.tree <- "tree1";
+.algo.operator.binary <- "algo.operator.binary";
+.algo.operator.binary.tree <- "tree2";
 
 .algo.restarts <- "algo.restarts";
-.algo.restartStrategy <- "algo.restartStrategy";
-.algo.restartStrategyHC2 <- "afterEnumeration";
-.algo.restartParameter <- "algo.restartParameter";
+.algo.restarts.strategy <- "algo.restarts.strategy";
+.algo.restarts.strategyHC2 <- "after.enumeration";
+.algo.restarts.parameter <- "algo.restarts.parameter";
 
-.algo.temperatureSchedule <- "algo.temperatureSchedule";
-.algo.temperatureStart <- "algo.temperatureStart";
-.algo.temperatureEpsilon <- "algo.temperatureEpsilon";
+.algo.temperature.schedule <- "algo.temperature.schedule";
+.algo.temperature.start <- "algo.temperature.start";
+.algo.temperature.parameter <- "algo.temperature.parameter";
 
 .algo.mu <- "algo.mu";
 .algo.lambda <- "algo.lambda";
-.algo.crossoverRate <- "algo.cr";
+.algo.binary.rate <- "algo.binary.rate";
 
 .algo.fitness <- "algo.fitness";
 #.algo.fitness.ffa <- "ffa";
 .algo.fitness.direct <- "direct";
 .algo.fitness.pruning <- "pruning";
 
-.algo.is.hybrid <- "algo.isHybrid";
-.algo.hybridGS <- "algo.hybridGS";
+.algo.is.hybrid <- "algo.is.hybrid";
+.algo.hybrid.global.search <- "algo.hybrid.global.search";
 
 .algo.model <- "algo.model";
+.algo.max.tree.depth <- "algo.max.tree.depth";
 
 .make.list <- function(keys, ...) {
   setNames(list(...), as.character(keys));
@@ -98,10 +102,16 @@ aitoa.algorithm.setup.rs <- function(algoDir) {
   if(algoDir == "rs") {
     return(.make.list(c(.algo.algorithm,
                         .algo.representation,
-                        .algo.is.hybrid),
+                        .algo.is.hybrid,
+                        .algo.fitness,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate),
                       .algo.algorithm.rs,
                       .algo.representation.default,
-                      FALSE));
+                      FALSE,
+                      .algo.fitness.direct,
+                      0L, 1L, 0));
   }
   return(NULL);
 }
@@ -122,46 +132,64 @@ aitoa.algorithm.setup.hc <- function(algoDir) {
     s <- trimws(s[[1L]]);
     if(length(s) == 2L) {
       return(.make.list(c(.algo.algorithm,
-                          .algo.unaryOperator,
+                          .algo.operator.unary,
                           .algo.restarts,
                           .algo.representation,
-                          .algo.is.hybrid),
-                          .algo.algorithm.hc,
+                          .algo.is.hybrid,
+                          .algo.fitness,
+                          .algo.mu,
+                          .algo.lambda,
+                          .algo.binary.rate),
+                        .algo.algorithm.hc,
                         s[[2L]],
                         FALSE,
                         .algo.representation.default,
-                        FALSE));
+                        FALSE,
+                        .algo.fitness.direct,
+                        1L, 1L, 0));
     }
     stopifnot(s[[2L]] == "rs");
     if(length(s) == 5L) {
       return(.make.list(c(.algo.algorithm,
-                          .algo.unaryOperator,
+                          .algo.operator.unary,
                           .algo.restarts,
-                          .algo.restartStrategy,
-                          .algo.restartParameter,
+                          .algo.restarts.strategy,
+                          .algo.restarts.parameter,
                           .algo.representation,
-                          .algo.is.hybrid),
+                          .algo.is.hybrid,
+                          .algo.fitness,
+                          .algo.mu,
+                          .algo.lambda,
+                          .algo.binary.rate),
                         .algo.algorithm.hc,
                         s[[5L]],
                         TRUE,
                         .try.parse.double(s[[3L]]),
                         .parse.double(s[[4L]]),
                         .algo.representation.default,
-                        FALSE));
+                        FALSE,
+                        .algo.fitness.direct,
+                        1L, 1L, 0));
     }
     stopifnot(length(s) == 4L);
     return(.make.list(c(.algo.algorithm,
-                        .algo.unaryOperator,
+                        .algo.operator.unary,
                         .algo.restarts,
-                        .algo.restartStrategy,
+                        .algo.restarts.strategy,
                         .algo.representation,
-                        .algo.is.hybrid),
+                        .algo.is.hybrid,
+                        .algo.fitness,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate),
                       .algo.algorithm.hc,
                       s[[4L]],
                       TRUE,
                       .try.parse.double(s[[3L]]),
                       .algo.representation.default,
-                      FALSE));
+                      FALSE,
+                      .algo.fitness.direct,
+                      1L, 1L, 0));
   }
   return(NULL);
 }
@@ -186,13 +214,17 @@ aitoa.algorithm.setup.sa <- function(algoDir) {
     eps <- .parse.double(s[[4L]]);
     stopifnot(eps >= 0);
     return(.make.list(c(.algo.algorithm,
-                        .algo.unaryOperator,
+                        .algo.operator.unary,
                         .algo.restarts,
                         .algo.representation,
-                        .algo.temperatureSchedule,
-                        .algo.temperatureStart,
-                        .algo.temperatureEpsilon,
-                        .algo.is.hybrid),
+                        .algo.temperature.schedule,
+                        .algo.temperature.start,
+                        .algo.temperature.parameter,
+                        .algo.is.hybrid,
+                        .algo.fitness,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate),
                       .algo.algorithm.sa,
                       s[[5L]],
                       FALSE,
@@ -200,7 +232,9 @@ aitoa.algorithm.setup.sa <- function(algoDir) {
                       s[[2L]],
                       ts,
                       eps,
-                      FALSE));
+                      FALSE,
+                      .algo.fitness.direct,
+                      1L, 1L, 0));
   }
   return(NULL);
 }
@@ -261,13 +295,13 @@ aitoa.algorithm.setup.ea <- function(algoDir) {
   stopifnot(cr >= 0, cr <= 1);
 
   return(.make.list(c(.algo.algorithm,
-                      .algo.unaryOperator,
-                      .algo.binaryOperator,
+                      .algo.operator.unary,
+                      .algo.operator.binary,
                       .algo.restarts,
                       .algo.representation,
                       .algo.mu,
                       .algo.lambda,
-                      .algo.crossoverRate,
+                      .algo.binary.rate,
                       .algo.fitness,
                       .algo.is.hybrid),
                     .algo.algorithm.ea,
@@ -332,16 +366,16 @@ aitoa.algorithm.setup.ma <- function(algoDir) {
   stopifnot(lambda > 0L);
 
   return(.make.list(c(.algo.algorithm,
-                      .algo.unaryOperator,
-                      .algo.binaryOperator,
+                      .algo.operator.unary,
+                      .algo.operator.binary,
                       .algo.restarts,
                       .algo.representation,
                       .algo.mu,
                       .algo.lambda,
-                      .algo.crossoverRate,
+                      .algo.binary.rate,
                       .algo.fitness,
                       .algo.is.hybrid,
-                      .algo.hybridGS),
+                      .algo.hybrid.global.search),
                     .algo.algorithm.ma,
                     s[[ofs + 1L]],
                     s[[ofs + 2L]],
@@ -447,7 +481,7 @@ aitoa.algorithm.setup.heda <- function(algoDir) {
   stopifnot(lambda > 0L);
 
   return(.make.list(c(.algo.algorithm,
-                      .algo.unaryOperator,
+                      .algo.operator.unary,
                       .algo.restarts,
                       .algo.representation,
                       .algo.model,
@@ -455,7 +489,7 @@ aitoa.algorithm.setup.heda <- function(algoDir) {
                       .algo.lambda,
                       .algo.fitness,
                       .algo.is.hybrid,
-                      .algo.hybridGS),
+                      .algo.hybrid.global.search),
                     .algo.algorithm.eda,
                     s[[ofs+1L]],
                     FALSE,
@@ -485,43 +519,119 @@ aitoa.algorithm.setup.hc2 <- function(algoDir) {
     s <- trimws(s[[1L]]);
     if(length(s) == 2L) {
       return(.make.list(c(.algo.algorithm,
-                          .algo.unaryOperator,
+                          .algo.operator.unary,
                           .algo.restarts,
                           .algo.representation,
-                          .algo.is.hybrid),
+                          .algo.is.hybrid,
+                          .algo.fitness,
+                          .algo.mu,
+                          .algo.lambda,
+                          .algo.binary.rate),
                         .algo.algorithm.hc2,
                         s[[2L]],
                         FALSE,
                         .algo.representation.default,
-                        FALSE));
+                        FALSE,
+                        .algo.fitness.direct,
+                        1L,
+                        1L,
+                        0));
     }
     stopifnot(length(s) == 3L,
               s[[2L]] == "rs");
     return(.make.list(c(.algo.algorithm,
-                        .algo.unaryOperator,
+                        .algo.operator.unary,
                         .algo.restarts,
-                        .algo.restartStrategy,
+                        .algo.restarts.strategy,
                         .algo.representation,
-                        .algo.is.hybrid),
+                        .algo.is.hybrid,
+                        .algo.fitness,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate),
                       .algo.algorithm.hc2,
                       s[[3L]],
                       TRUE,
-                      .algo.restartStrategyHC2,
+                      .algo.restarts.strategyHC2,
                       .algo.representation.default,
-                      FALSE));
+                      FALSE,
+                      .algo.fitness.direct,
+                      1L, 1L, 0));
   }
   return(NULL);
 }
 
 
-.algo.setup.functions <- c(aitoa.algorithm.setup.rs,
-                           aitoa.algorithm.setup.hc,
-                           aitoa.algorithm.setup.sa,
-                           aitoa.algorithm.setup.ea,
-                           aitoa.algorithm.setup.ma,
-                           aitoa.algorithm.setup.eda,
-                           aitoa.algorithm.setup.heda,
-                           aitoa.algorithm.setup.hc2);
+.algo.setup.functions.inner <- c(aitoa.algorithm.setup.rs,
+                                 aitoa.algorithm.setup.hc,
+                                 aitoa.algorithm.setup.sa,
+                                 aitoa.algorithm.setup.ea,
+                                 aitoa.algorithm.setup.ma,
+                                 aitoa.algorithm.setup.eda,
+                                 aitoa.algorithm.setup.heda,
+                                 aitoa.algorithm.setup.hc2);
+.algo.setup.functions.inner.add.par <- c(0L,#aitoa.algorithm.setup.rs,
+                                         1L,#aitoa.algorithm.setup.hc,
+                                         1L,#,aitoa.algorithm.setup.sa,
+                                         2L,#aitoa.algorithm.setup.ea,
+                                         2L,#aitoa.algorithm.setup.ma,
+                                         0L,#aitoa.algorithm.setup.eda,
+                                         1L,#aitoa.algorithm.setup.heda,
+                                         2L#aitoa.algorithm.setup.hc2
+                                         );
+
+
+
+#' @title Parse the Parameters of an Algorithm utilizing the Tree Representation
+#' @description Check whether an algorithm directory is a tree-representation
+#'   based algorithm and return the corresponding parameters if yes or
+#'   \code{NULL} if not.
+#' @param algoDir the algorithm directory
+#' @return the parameters of the algorithm if it is a tree representation-based
+#'   algorithm or \code{NULL} if it is not
+#' @export aitoa.algorithm.setup.gp
+aitoa.algorithm.setup.gp <- function(algoDir) {
+  if(!(grepl("^gp[1-9][0-9]*\\_", algoDir, fixed=FALSE))) {
+    return(NULL);
+  }
+  s <- strsplit(algoDir, "_", fixed=TRUE);
+  stopifnot(length(s) == 1L);
+  s <- s[[1L]];
+  depth <- .parse.int(substr(s[[1L]], 3L, nchar(s[[1L]])));
+  stopifnot(depth > 1L);
+  rest <- paste(s[-1L], sep="_", collapse="_");
+  result <- NULL;
+  for(i in seq_along(.algo.setup.functions.inner)) {
+    x <- .algo.setup.functions.inner.add.par[[i]];
+    if(x <= 0L) {
+      stopifnot(x == 0L);
+      p <- rest;
+    } else {
+      if(x <= 1L) {
+        p <- paste(rest, .algo.operator.unary.tree, sep="_", collapse="_");
+      } else {
+        stopifnot(x == 2L);
+        p <- paste(rest, .algo.operator.unary.tree,
+                         .algo.operator.binary.tree,
+                   sep="_", collapse="_");
+      }
+    }
+    result <- .algo.setup.functions.inner[[i]](p);
+    result <- force(result);
+    if(!(is.null(result))) {
+      break;
+    }
+  }
+
+  stopifnot(!is.null(result));
+  result[[.algo.representation]] <- .algo.representation.tree;
+  result[[.algo.max.tree.depth]] <- depth;
+  return(result);
+}
+
+
+.algo.setup.functions <- unlist(c(.algo.setup.functions.inner,
+                                   aitoa.algorithm.setup.gp));
 
 #' @title Get the Default Algorithm Setup Parsers
 #' @description  Get the list of default algorithm setup parameter parsers
