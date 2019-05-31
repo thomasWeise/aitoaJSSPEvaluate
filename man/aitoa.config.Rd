@@ -7,7 +7,8 @@
 \usage{
 aitoa.config(dir.results = "./results",
   dir.evaluation = "./evaluation", logger = .logger,
-  min.instances = 4L, min.runs = 101L)
+  min.instances = 4L, min.runs = 101L, instance.features = function()
+  get(data("jsspInstances")))
 }
 \arguments{
 \item{dir.results}{the directory where the results are expected}
@@ -20,6 +21,10 @@ written to}
 \item{min.instances}{the minimum number of instances}
 
 \item{min.runs}{the minimum number of runs per instance and algorithm}
+
+\item{instance.features}{a function which can be called and will return a
+data frame with the names and features of instances, which must be
+formatted exactly as documented in \link{jsspInstances}}
 }
 \value{
 the configuration object

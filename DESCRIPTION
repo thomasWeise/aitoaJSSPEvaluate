@@ -24,3 +24,4 @@ Collate:
     'utils.R'
     'setups.R'
     'end_results.R'
+    'instance_features.R'
