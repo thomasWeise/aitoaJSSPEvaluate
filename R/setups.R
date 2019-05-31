@@ -27,18 +27,27 @@
 #'   ensures that all data is comparable. Additional runs will be ignored, as
 #'   well as algorithms or instances for which insufficient data was collected.
 #' @param config the configuration
-#' @return a list with directories
+#' @return a data frame with the following columns:
+#' \describe{
+#'   \item{id}{the id of the executed setup + random seed combination}
+#'   \item{algorithm}{the algorithm directory part}
+#'   \item{instance}{the instance directory part}
+#'   \item{dir}{the sub-directory path, relative to \code{config$dir.results}}
+#'   \item{seed}{the random seed for the run}
+#'   \item{file}{the file of the run, relative to \code{config$dir.results}}
+#' }
 #' @include utils.R
 #' @include config.R
 #' @export aitoa.setups.frame
 #' @importFrom utils read.csv write.csv
 aitoa.setups.frame <- function(config=aitoa.config()) {
-  file <- file.path(.dir.eval(config=config), "dirs.txt");
+  file <- file.path(.dir.eval(config=config), "setups.txt");
 
   if(!file.exists(file)) {
-    config$logger("setups directory file '", file, "' does not yet exist, so we need to create it.");
+    config$logger("setups file '", file, "' does not yet exist, so we need to create it.");
 
     base <- config$dir.results;
+    stopifnot(dir.exists(base));
 
     algorithms <- sort(unique(unlist(list.dirs(path=base, full.names=FALSE, recursive=FALSE))));
     config$logger("found list of ", length(algorithms), " potential algorithms.");
@@ -214,27 +223,58 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
       }
     }
 
+    frame.id <- (1L:(length(frame.algo)));
+    frame.seeds <- vapply(frame.seeds, function(s) paste("$", s, sep="", collapse=""), "");
     stopifnot(all(vapply(frame.files,
                          function(f) file.exists(file.path(base, f)),
-                         FALSE)));
+                         FALSE)),
+              length(frame.algo) > 0L,
+              length(frame.id) == length(frame.algo),
+              length(frame.algo) == length(frame.inst),
+              length(frame.inst) == length(frame.dir),
+              length(frame.dir) == length(frame.seeds),
+              length(frame.seeds) == length(frame.files));
 
-    write.csv(data.frame(algorithm=frame.algo,
+    write.csv(data.frame(id=frame.id,
+                         algorithm=frame.algo,
                          instance=frame.inst,
                          dir=frame.dir,
                          seed=frame.seeds,
-                         file=frame.files, check.names = FALSE),
+                         file=frame.files,
+                         check.names = FALSE),
               file=file,
-              row.names=FALSE);
+              row.names=FALSE,
+              quote=FALSE);
+
+    rm(frame.algo);
+    rm(frame.id);
+    rm(frame.inst);
+    rm(frame.seeds);
+    rm(frame.dir);
+    rm(frame.files);
     gc();
+
+    stopifnot(file.exists(file),
+              file.size(file) > 100L);
     config$logger("file '", file, "' created successfully.");
   }
 
-  stopifnot(file.size(file) > 1L);
+  stopifnot(file.exists(file),
+            file.size(file) > 100L);
   config$logger("now loading list of setups from file '", file, "'.");
   result <- read.csv(file, check.names = FALSE);
   stopifnot(nrow(result) > 0L,
-            ncol(result) == 5L,
-            colnames(result) == c("algorithm", "instance", "dir", "seed", "file"));
+            ncol(result) == 6L,
+            colnames(result) == c("id", "algorithm", "instance", "dir", "seed", "file"),
+            all(is.integer(result$id)),
+            all(result$id == (1L:nrow(result))),
+            all(is.factor(result$algorithm)),
+            all(is.factor(result$instance) | is.integer(result$instance)),
+            all(is.factor(result$seed) | is.character(result$seed)),
+            all(startsWith(as.character(result$seed), "$")),
+            all(is.factor(result$dir) | is.character(result$dir)),
+            all(is.factor(result$file) | is.character(result$file)));
+  gc();
   config$logger("done loading list of setups from file '", file, "'.");
   return(result);
 }

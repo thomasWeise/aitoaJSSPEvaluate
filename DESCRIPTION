@@ -17,9 +17,10 @@ ByteCompile: true
 LazyData: true
 RoxygenNote: 6.1.1
 Collate: 
-    'algoSetups.R'
+    'algorithm_parameters.R'
     'config.R'
     'data.R'
     'load_log_file.R'
     'utils.R'
     'setups.R'
+    'end_results.R'

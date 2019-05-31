@@ -99,8 +99,8 @@
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is random sampling or
 #'   \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.rs
-aitoa.algorithm.setup.rs <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.rs
+aitoa.algorithm.parameters.rs <- function(algoDir) {
   if(algoDir == "rs") {
     return(.make.list(c(.algo.algorithm,
                         .algo.representation,
@@ -126,8 +126,8 @@ aitoa.algorithm.setup.rs <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is hill climbing or \code{NULL}
 #'   if it is not
-#' @export aitoa.algorithm.setup.hc
-aitoa.algorithm.setup.hc <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.hc
+aitoa.algorithm.parameters.hc <- function(algoDir) {
   if(startsWith(algoDir, "hc_")) {
     s <- strsplit(algoDir, "_", fixed=TRUE);
     stopifnot(length(s) == 1L);
@@ -204,8 +204,8 @@ aitoa.algorithm.setup.hc <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is Simulated Annealing or \code{NULL}
 #'   if it is not
-#' @export aitoa.algorithm.setup.sa
-aitoa.algorithm.setup.sa <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.sa
+aitoa.algorithm.parameters.sa <- function(algoDir) {
   if(startsWith(algoDir, "sa_")) {
     s <- strsplit(algoDir, "_", fixed=TRUE);
     stopifnot(length(s) == 1L);
@@ -249,8 +249,8 @@ aitoa.algorithm.setup.sa <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is an Evolutionary Algorithm or
 #'   \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.ea
-aitoa.algorithm.setup.ea <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.ea
+aitoa.algorithm.parameters.ea <- function(algoDir) {
   is.ea <- startsWith(algoDir, "ea_");
   if(is.ea) {
     is.pruning <- FALSE;
@@ -326,8 +326,8 @@ aitoa.algorithm.setup.ea <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is a Memetic Algorithm or
 #'   \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.ma
-aitoa.algorithm.setup.ma <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.ma
+aitoa.algorithm.parameters.ma <- function(algoDir) {
   is.ma <- startsWith(algoDir, "ma_");
   if(is.ma) {
     is.pruning <- FALSE;
@@ -399,8 +399,8 @@ aitoa.algorithm.setup.ma <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is an Estimation of
 #'   Distribution Algorithm or \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.eda
-aitoa.algorithm.setup.eda <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.eda
+aitoa.algorithm.parameters.eda <- function(algoDir) {
   if(!startsWith(algoDir, "eda_")) {
     return(NULL);
   }
@@ -454,8 +454,8 @@ aitoa.algorithm.setup.eda <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is an hybrid Estimation of
 #'   Distribution Algorithm or \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.heda
-aitoa.algorithm.setup.heda <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.heda
+aitoa.algorithm.parameters.heda <- function(algoDir) {
   if(!startsWith(algoDir, "heda_")) {
     return(NULL);
   }
@@ -513,8 +513,8 @@ aitoa.algorithm.setup.heda <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is hill climbing 2 or \code{NULL}
 #'   if it is not
-#' @export aitoa.algorithm.setup.hc2
-aitoa.algorithm.setup.hc2 <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.hc2
+aitoa.algorithm.parameters.hc2 <- function(algoDir) {
   if(startsWith(algoDir, "hc2f_")) {
     s <- strsplit(algoDir, "_", fixed=TRUE);
     stopifnot(length(s) == 1L);
@@ -564,22 +564,22 @@ aitoa.algorithm.setup.hc2 <- function(algoDir) {
 }
 
 
-.algo.setup.functions.inner <- c(aitoa.algorithm.setup.rs,
-                                 aitoa.algorithm.setup.hc,
-                                 aitoa.algorithm.setup.sa,
-                                 aitoa.algorithm.setup.ea,
-                                 aitoa.algorithm.setup.ma,
-                                 aitoa.algorithm.setup.eda,
-                                 aitoa.algorithm.setup.heda,
-                                 aitoa.algorithm.setup.hc2);
-.algo.setup.functions.inner.add.par <- c(0L,#aitoa.algorithm.setup.rs,
-                                         1L,#aitoa.algorithm.setup.hc,
-                                         1L,#,aitoa.algorithm.setup.sa,
-                                         2L,#aitoa.algorithm.setup.ea,
-                                         2L,#aitoa.algorithm.setup.ma,
-                                         0L,#aitoa.algorithm.setup.eda,
-                                         1L,#aitoa.algorithm.setup.heda,
-                                         2L#aitoa.algorithm.setup.hc2
+.algo.setup.functions.inner <- c(aitoa.algorithm.parameters.rs,
+                                 aitoa.algorithm.parameters.hc,
+                                 aitoa.algorithm.parameters.sa,
+                                 aitoa.algorithm.parameters.ea,
+                                 aitoa.algorithm.parameters.ma,
+                                 aitoa.algorithm.parameters.eda,
+                                 aitoa.algorithm.parameters.heda,
+                                 aitoa.algorithm.parameters.hc2);
+.algo.setup.functions.inner.add.par <- c(0L,#aitoa.algorithm.parameters.rs,
+                                         1L,#aitoa.algorithm.parameters.hc,
+                                         1L,#,aitoa.algorithm.parameters.sa,
+                                         2L,#aitoa.algorithm.parameters.ea,
+                                         2L,#aitoa.algorithm.parameters.ma,
+                                         0L,#aitoa.algorithm.parameters.eda,
+                                         1L,#aitoa.algorithm.parameters.heda,
+                                         2L#aitoa.algorithm.parameters.hc2
                                          );
 
 
@@ -591,8 +591,8 @@ aitoa.algorithm.setup.hc2 <- function(algoDir) {
 #' @param algoDir the algorithm directory
 #' @return the parameters of the algorithm if it is a tree representation-based
 #'   algorithm or \code{NULL} if it is not
-#' @export aitoa.algorithm.setup.gp
-aitoa.algorithm.setup.gp <- function(algoDir) {
+#' @export aitoa.algorithm.parameters.gp
+aitoa.algorithm.parameters.gp <- function(algoDir) {
   if(!(grepl("^gp[1-9][0-9]*\\_", algoDir, fixed=FALSE))) {
     return(NULL);
   }
@@ -633,13 +633,13 @@ aitoa.algorithm.setup.gp <- function(algoDir) {
 
 
 .algo.setup.functions <- unlist(c(.algo.setup.functions.inner,
-                                   aitoa.algorithm.setup.gp));
+                                   aitoa.algorithm.parameters.gp));
 
 #' @title Get the Default Algorithm Setup Parsers
 #' @description  Get the list of default algorithm setup parameter parsers
 #' @return the list of default algorithm setup parameter parsers
-#' @export aitoa.algorithm.setup.parsers
-aitoa.algorithm.setup.parsers <- function() .algo.setup.functions
+#' @export aitoa.algorithm.parameters.parsers
+aitoa.algorithm.parameters.parsers <- function() .algo.setup.functions
 
 #' @title Parse the Parameters of an Algorithm
 #' @description Check whether an algorithm directory fits to any known algorithm
@@ -647,8 +647,8 @@ aitoa.algorithm.setup.parsers <- function() .algo.setup.functions
 #' @param algoDir the algorithm directory
 #' @param parsers the list of parsers to apply
 #' @return the parameters of the algorithm
-#' @export aitoa.algorithm.setup
-aitoa.algorithm.setup <- function(algoDir, parsers=aitoa.algorithm.setup.parsers()) {
+#' @export aitoa.algorithm.parameters
+aitoa.algorithm.parameters <- function(algoDir, parsers=aitoa.algorithm.parameters.parsers()) {
   for(f in parsers) {
     a <- f(algoDir);
     if(!is.null(a)) {

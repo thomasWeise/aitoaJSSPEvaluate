@@ -10,7 +10,15 @@ aitoa.setups.frame(config = aitoa.config())
 \item{config}{the configuration}
 }
 \value{
-a list with directories
+a data frame with the following columns:
+\describe{
+  \item{id}{the id of the executed setup + random seed combination}
+  \item{algorithm}{the algorithm directory part}
+  \item{instance}{the instance directory part}
+  \item{dir}{the sub-directory path, relative to \code{config$dir.results}}
+  \item{seed}{the random seed for the run}
+  \item{file}{the file of the run, relative to \code{config$dir.results}}
+}
 }
 \description{
 This function extends best effort towards obtaining a list of

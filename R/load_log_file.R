@@ -122,7 +122,7 @@ aitoa.load.log.file <- function(file,
   }
   if(startPointAdded) {
     stopifnot(t[1L] == t[2L],
-              f[1L] == f[2L]);
+              f[1L] >= f[2L]);
   }
 
   data <- data.frame(t=t, fes=fes, f=f);
