@@ -11,6 +11,7 @@
 #' @include setups.R
 #' @include load_log_file.R
 aitoa.end.results.frame <- function(config=aitoa.config()) {
+  old.options <- options(warn=2);
   file <- file.path(.dir.eval(config=config), "endResults.txt");
 
   if(!file.exists(file)) {
@@ -38,17 +39,41 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
       stopifnot(file.exists(path));
 
       results <- aitoa.load.log.file(path, config);
+      results <- force(results);
+      stopifnot(is.data.frame(results));
       n <- nrow(results);
-      stopifnot(is.data.frame(results),
-                n > 0L);
+      n <- force(n);
+      stopifnot(n > 0L);
       f <- unname(unlist(results$f));
+      f <- force(f);
       fes <- unname(unlist(results$fes));
+      fes <- force(fes);
       t <- unname(unlist(results$t));
-      rm(results);
+      t <- force(t);
+
+      rm("results");
+
+      f <- force(f);
+      fes <- force(fes);
+      t <- force(t);
+      n <- force(n);
+
+      stopifnot(is.vector(f));
+      stopifnot(is.integer(f));
+      stopifnot(length(f) == n);
+      stopifnot(is.vector(fes));
+      stopifnot(is.integer(fes));
+      stopifnot(length(fes) == n);
+      stopifnot(is.vector(t));
+      stopifnot(is.integer(t));
+      stopifnot(length(t) == n);
 
       total.time <- t[[n]];
+      total.time <- force(total.time);
       total.fes <- fes[[n]];
+      total.fes <- force(total.fes);
       best.f <- f[[n]];
+      best.f <- force(best.f);
       stopifnot(total.time >= 0L,
                 is.integer(total.time),
                 is.finite(total.time),
@@ -59,13 +84,20 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
                 is.integer(best.f),
                 is.finite(best.f));
       last.improvement.time <- total.time;
+      last.improvement.time <- force(last.improvement.time);
       last.improvement.fes <- total.fes;
+      last.improvement.fes <- force(last.improvement.fes);
 
       while((n > 1L) && (f[[n - 1L]] <= best.f)) {
         n <- n - 1L;
-        stopifnot(f[[n]] == best.f);
+        n <- force(n);
+        x <- f[[n]];
+        x <- force(x);
+        stopifnot(x == best.f);
         last.improvement.fes <- fes[n];
+        last.improvement.fes <- force(last.improvement.fes);
         last.improvement.time <- t[n];
+        last.improvement.time <- force(last.improvement.time);
         stopifnot(last.improvement.time >= 0L,
                   last.improvement.time <= total.time,
                   is.integer(last.improvement.time),
@@ -76,6 +108,10 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
                   is.finite(last.improvement.fes));
       }
 
+      rm("f");
+      rm("t");
+      rm("fes");
+
       frame.total.time[i] <- total.time;
       frame.total.fes[i] <- total.fes;
       frame.best.f[i] <- best.f;
@@ -83,6 +119,11 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
       frame.last.improvement.fes[i] <- last.improvement.fes;
     }
 
+    frame.total.time <- force(frame.total.time);
+    frame.total.fes <- force(frame.total.fes);
+    frame.best.f <- force(frame.best.f);
+    frame.last.improvement.time <- force(frame.last.improvement.time);
+    frame.last.improvement.fes <- force(frame.last.improvement.fes);
     stopifnot(all(is.finite(frame.total.time)),
               all(frame.total.time >= 0L),
               all(is.integer(frame.total.time)),
@@ -131,6 +172,7 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
             file.size(file) > 100L);
   config$logger("now loading end results from file '", file, "'.");
   result <- read.csv(file, check.names = FALSE);
+  result <- force(result);
   stopifnot(nrow(result) > 0L,
             ncol(result) == 9L,
             colnames(result) == c("id", "algorithm", "instance", "seed",
@@ -138,5 +180,6 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
                                   "last.improvement.time",
                                   "last.improvement.fes"));
   config$logger("done loading end results from file '", file, "'.");
+  options(old.options);
   return(result);
 }

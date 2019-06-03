@@ -41,6 +41,7 @@
 #' @export aitoa.setups.frame
 #' @importFrom utils read.csv write.csv
 aitoa.setups.frame <- function(config=aitoa.config()) {
+  old.options <- options(warn=2);
   file <- file.path(.dir.eval(config=config), "setups.txt");
 
   if(!file.exists(file)) {
@@ -246,12 +247,12 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
               row.names=FALSE,
               quote=FALSE);
 
-    rm(frame.algo);
-    rm(frame.id);
-    rm(frame.inst);
-    rm(frame.seeds);
-    rm(frame.dir);
-    rm(frame.files);
+    rm("frame.algo");
+    rm("frame.id");
+    rm("frame.inst");
+    rm("frame.seeds");
+    rm("frame.dir");
+    rm("frame.files");
     gc();
 
     stopifnot(file.exists(file),
@@ -263,6 +264,7 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
             file.size(file) > 100L);
   config$logger("now loading list of setups from file '", file, "'.");
   result <- read.csv(file, check.names = FALSE);
+  result <- force(result);
   stopifnot(nrow(result) > 0L,
             ncol(result) == 6L,
             colnames(result) == c("id", "algorithm", "instance", "dir", "seed", "file"),
@@ -276,5 +278,6 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
             all(is.factor(result$file) | is.character(result$file)));
   gc();
   config$logger("done loading list of setups from file '", file, "'.");
+  options(old.options);
   return(result);
 }

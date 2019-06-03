@@ -11,6 +11,7 @@
 #' @importFrom utils read.csv write.csv
 #' @include setups.R
 aitao.instance.features.frame <- function(config=aitoa.config()) {
+  old.options <- options(warn=2);
   file <- file.path(.dir.eval(config=config), "instanceFeatures.txt");
 
   if(!file.exists(file)) {
@@ -52,7 +53,8 @@ aitao.instance.features.frame <- function(config=aitoa.config()) {
               file=file,
               row.names=FALSE,
               quote=FALSE);
-
+    rm("features");
+    rm("names");
     stopifnot(file.exists(file),
               file.size(file) > 10L*n);
     config$logger("file '", file, "' created successfully.");
@@ -62,6 +64,7 @@ aitao.instance.features.frame <- function(config=aitoa.config()) {
             file.size(file) > 10L);
   config$logger("now loading instance features from file '", file, "'.");
   result <- read.csv(file, check.names = FALSE);
+  result <- force(result);
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
             colnames(result) == c("inst.name",
@@ -81,5 +84,6 @@ aitao.instance.features.frame <- function(config=aitoa.config()) {
             all(is.integer(result$inst.solutions.num)),
             all(result$inst.solutions.num >= 0L));
   config$logger("done loading instance features from file '", file, "'.");
+  options(old.options);
   return(result);
 }

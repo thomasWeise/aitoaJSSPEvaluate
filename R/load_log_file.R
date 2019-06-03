@@ -11,6 +11,7 @@
 #' @export aitoa.load.log.file
 aitoa.load.log.file <- function(file,
                                 config=aitoa.config()) {
+  old.options <- options(warn=2);
   stopifnot(is.character(file));
 
   if(file.exists(file)) {
@@ -26,23 +27,33 @@ aitoa.load.log.file <- function(file,
 
   # read file as text file, one line = one element
   data <- readLines(con=file, warn=FALSE);
+  data <- force(data);
 
   # detect consumed FEs
   consumedFEs <- grep("# CONSUMED_FES:", data, fixed = TRUE);
+  consumedFEs <- force(consumedFEs);
   stopifnot(length(consumedFEs) > 0L);
-  consumedFEs <- as.integer(trimws(strsplit(data[consumedFEs[[1]]],":", fixed=TRUE)[[1]][2]));
-  stopifnot(consumedFEs > 0L,
-            is.finite(consumedFEs));
+  consumedFEs <- as.integer(trimws(strsplit(data[consumedFEs[[1L]]],":", fixed=TRUE)[[1L]][2L]));
+  consumedFEs <- force(consumedFEs);
+  check <- ((consumedFEs > 0L) && is.finite(consumedFEs));
+  check <- force(check);
+  stopifnot(check);
 
+  # detect consumed time
   consumedTime <- grep("# CONSUMED_TIME:", data, fixed = TRUE);
+  consumedTime <- force(consumedTime);
   stopifnot(length(consumedTime) > 0L);
-  consumedTime <- as.integer(trimws(strsplit(data[consumedTime[[1]]],":", fixed=TRUE)[[1]][2]));
-  stopifnot(consumedTime > 0L,
-            is.finite(consumedTime));
+  consumedTime <- as.integer(trimws(strsplit(data[consumedTime[[1L]]],":", fixed=TRUE)[[1L]][2L]));
+  consumedTime <- force(consumedTime);
+  check <- ((consumedTime > 0L) && is.finite(consumedTime));
+  check <- force(check);
+  stopifnot(check);
 
   # extract the correct lines
   start <- grep("# BEGIN_LOG", data, fixed=TRUE)[[1L]];
+  start <- force(start);
   end <- grep("# END_OF_LOG", data, fixed=TRUE)[[1L]];
+  end <- force(end);
   stopifnot(start > 0L,
             end > (start + 2L),
             is.finite(start),
@@ -50,10 +61,14 @@ aitoa.load.log.file <- function(file,
 
   # load data as CSV
   data <- strsplit(data[(start+2L):(end-1L)], ";", fixed=TRUE);
+  data <- force(data);
   f   <- as.integer(vapply(data, `[[`, "", 1L));
+  f   <- force(f);
   fes <- as.integer(vapply(data, `[[`, "", 2L));
+  fes <- force(fes);
   t   <- as.integer(vapply(data, `[[`, "", 3L));
-  rm(data);
+  t   <- force(t);
+  rm("data");
 
   stopifnot(length(unique(fes)) == length(fes));
 
@@ -127,9 +142,10 @@ aitoa.load.log.file <- function(file,
 
   data <- data.frame(t=t, fes=fes, f=f);
   data <- force(data);
-  rm(f);
-  rm(fes);
-  rm(t);
+  rm("f");
+  rm("fes");
+  rm("t");
   gc();
+  options(old.options);
   return(data);
 }
