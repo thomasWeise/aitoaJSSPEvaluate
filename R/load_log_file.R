@@ -3,6 +3,12 @@
 #' @description Load a log file and return the results as a data frame.
 #' @param file the log file
 #' @param config the configuration
+#' @param makeTimeUnique should we make the time indices unique (except maybe
+#'   for the first and last point)? This makes sense when we want to plot
+#'   diagrams over a time axis, asa we then have removed redundant points right
+#'   away. If \code{makeTimeUnique==FALSE}, then there may be multiple
+#'   improvements at the same time index due to the resolution of the computer
+#'   clock (while each improvement will definitely have a unique FE).
 #' @return a data frame with the columns \code{t} (time in ms), \code{fes}
 #'   (function evaluations), and \code{f} (objective value), all of which are
 #'   integer valued
@@ -10,9 +16,12 @@
 #' @seealso aitoa.config
 #' @export aitoa.load.log.file
 aitoa.load.log.file <- function(file,
-                                config=aitoa.config()) {
+                                config=aitoa.config(),
+                                makeTimeUnique=FALSE) {
   old.options <- options(warn=2);
-  stopifnot(is.character(file));
+  stopifnot(is.character(file),
+            is.list(config),
+            is.logical(makeTimeUnique));
 
   if(file.exists(file)) {
     file <- normalizePath(file, mustWork=TRUE);
@@ -72,17 +81,21 @@ aitoa.load.log.file <- function(file,
 
   stopifnot(length(unique(fes)) == length(fes));
 
-  # take care of re-occuring time values
   startPointAdded <- FALSE;
-  t.unique.indexes <- findInterval(unique(t), t);
-  if(t.unique.indexes[1L] != 1L) {
-    t.unique.indexes <- c(1L, t.unique.indexes);
-    startPointAdded <- TRUE;
+  if(isTRUE(makeTimeUnique)) {
+    # take care of re-occuring time values
+    t.unique.indexes <- findInterval(unique(t), t);
+    if(t.unique.indexes[1L] != 1L) {
+      t.unique.indexes <- c(1L, t.unique.indexes);
+      startPointAdded <- TRUE;
+    }
+    t <- t[t.unique.indexes];
+    t <- force(t);
+    f <- f[t.unique.indexes];
+    f <- force(f);
+    fes <- fes[t.unique.indexes];
+    fes <- force(fes);
   }
-  t <- t[t.unique.indexes];
-  f <- f[t.unique.indexes];
-  fes <- fes[t.unique.indexes];
-
 
   l <- length(t);
   stopifnot(l >= 1L);
@@ -140,12 +153,42 @@ aitoa.load.log.file <- function(file,
               f[1L] >= f[2L]);
   }
 
+  t <- force(t);
+  fes <- force(fes);
+  f <- force(f);
   data <- data.frame(t=t, fes=fes, f=f);
   data <- force(data);
   rm("f");
   rm("fes");
   rm("t");
   gc();
+
+# The odd and semantically useless force and dummy stuff is to
+# prevent the "restarting interrupted promise evaluation" that
+# tends to appear without any good reason down the road when
+# using this function sometimes. I do not know a reason why that
+# should be necessary, but it seemingly is.
+  data <- force(data);
+  dummy <- data$fes;
+  dummy <- force(dummy);
+  dummy <- data$fes[[l]];
+  dummy <- force(dummy);
+  dummy <- data$t;
+  dummy <- force(dummy);
+  dummy <- data$t[[l]];
+  dummy <- force(dummy);
+  dummy <- data$f;
+  dummy <- force(dummy);
+  dummy <- data$f[[l]];
+  dummy <- force(dummy);
+  stopifnot(is.data.frame(data),
+            nrow(data) > 0L,
+            ncol(data) == 3L,
+            names(data) == c("t", "fes", "f"),
+            is.integer(data$t),
+            is.integer(data$fes),
+            is.integer(data$f));
   options(old.options);
+
   return(data);
 }

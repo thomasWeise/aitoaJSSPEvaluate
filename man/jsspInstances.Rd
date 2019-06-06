@@ -14,8 +14,8 @@
   globally optimal solution}
   \item{inst.opt.bound.upper}{the upper bound for the makespan of the
   globally optimal solution}
-  \item{inst.solutions.num}{the number of discovered/known gobally optimal
-  solutions}
+  \item{inst.solutions.num}{the number of discovered gobally optimal
+  solutions on \href{http://jobshop.jjvh.nl}{http://jobshop.jjvh.nl}}
 }}
 \source{
 \href{http://jobshop.jjvh.nl/}{http://jobshop.jjvh.nl/}

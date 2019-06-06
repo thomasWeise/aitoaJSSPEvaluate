@@ -58,18 +58,17 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
     config$logger("found list of ", length(instances), " potential instances");
     stopifnot(length(instances) > 0L);
 
+
+    instances.len  <- length(instances);
+    algorithms.len <- length(algorithms);
     repeat {
-      instances.len  <- length(instances);
-      algorithms.len <- length(algorithms);
       repeat {
-        instances.len  <- length(instances);
-        algorithms.len <- length(algorithms);
         repeat {
-          instances.len  <- length(instances);
-          algorithms.len <- length(algorithms);
           repeat {
-            instances.len  <- length(instances);
+            instances.len <- length(instances);
+            instances.len <- force(instances.len);
             algorithms.len <- length(algorithms);
+            algorithms.len <- force(algorithms.len);
 
             algorithms <- algorithms[vapply(algorithms,
               function(a) {

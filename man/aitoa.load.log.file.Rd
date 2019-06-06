@@ -4,12 +4,20 @@
 \alias{aitoa.load.log.file}
 \title{Load a Single Log File}
 \usage{
-aitoa.load.log.file(file, config = aitoa.config())
+aitoa.load.log.file(file, config = aitoa.config(),
+  makeTimeUnique = FALSE)
 }
 \arguments{
 \item{file}{the log file}
 
 \item{config}{the configuration}
+
+\item{makeTimeUnique}{should we make the time indices unique (except maybe
+for the first and last point)? This makes sense when we want to plot
+diagrams over a time axis, asa we then have removed redundant points right
+away. If \code{makeTimeUnique==FALSE}, then there may be multiple
+improvements at the same time index due to the resolution of the computer
+clock (while each improvement will definitely have a unique FE).}
 }
 \value{
 a data frame with the columns \code{t} (time in ms), \code{fes}

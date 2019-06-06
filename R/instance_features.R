@@ -7,10 +7,10 @@
 #'   \link{jsspInstances}
 #' @include utils.R
 #' @include config.R
-#' @export aitao.instance.features.frame
+#' @export aitoa.instance.features.frame
 #' @importFrom utils read.csv write.csv
 #' @include setups.R
-aitao.instance.features.frame <- function(config=aitoa.config()) {
+aitoa.instance.features.frame <- function(config=aitoa.config()) {
   old.options <- options(warn=2);
   file <- file.path(.dir.eval(config=config), "instanceFeatures.txt");
 

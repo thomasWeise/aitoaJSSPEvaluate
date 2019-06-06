@@ -7,7 +7,8 @@ Maintainer: Dr. Thomas Weise <tweise@hfuu.edu.cn>
 Description: With this package, we evaluate the JSSP results.
 License: GPL-3
 Encoding: UTF-8
-Imports: utils (>= 3.5.2)
+Imports: stats (>= 3.5.2),
+         utils (>= 3.5.2)
 Suggests: devtools (>= 2.0.2),
           roxygen2 (>= 6.1.1),
           testthat (>= 2.1.1),
@@ -20,8 +21,9 @@ Collate:
     'algorithm_parameters.R'
     'config.R'
     'data.R'
-    'load_log_file.R'
     'utils.R'
     'setups.R'
-    'end_results.R'
     'instance_features.R'
+    'load_log_file.R'
+    'end_results.R'
+    'end_results_stats.R'
