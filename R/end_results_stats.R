@@ -306,7 +306,6 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
         stopifnot(xor((best.f.sd.i <= 0), (best.f.max.i.int > best.f.min.i.int)),
                   xor((best.f.sd.i  > 0), (best.f.max.i == best.f.min.i)));
 
-
 # picking the files
         files.sel <- endResults$file[sel];
         files.sel <- force(files.sel);
@@ -409,8 +408,6 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
         stopifnot(xor((last.improvement.time.sd.i <= 0), (last.improvement.time.max.i.int > last.improvement.time.min.i.int)),
                   xor((last.improvement.time.sd.i  > 0), (last.improvement.time.max.i == last.improvement.time.min.i)));
 
-
-
 # now computing stats for the last improvement FEs
         last.improvement.fes <- unname(unlist(endResults$last.improvement.fes[sel]));
         stopifnot(is.integer(last.improvement.fes),
@@ -467,12 +464,14 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
         stopifnot(xor((last.improvement.fes.sd.i <= 0), (last.improvement.fes.max.i.int > last.improvement.fes.min.i.int)),
                   xor((last.improvement.fes.sd.i  > 0), (last.improvement.fes.max.i == last.improvement.fes.min.i)));
 
-
 # now compute opt bound upper
         sel.opt.bound.upper <- (opt.bound.upper >= best.f);
+        stopifnot(length(sel.opt.bound.upper) == count);
+
         n.opt.bound.upper.i <- as.integer(sum(sel.opt.bound.upper));
         n.opt.bound.upper.i <- force(n.opt.bound.upper.i);
         stopifnot(n.opt.bound.upper.i >= 0L,
+                  n.opt.bound.upper.i <= count,
                   xor(best.f.min.i.int > opt.bound.upper, n.opt.bound.upper.i > 0L),
                   all(sel.opt.bound.upper == endResults$reached.opt.bound.upper[sel]),
                   n.opt.bound.upper.i == sum(endResults$reached.opt.bound.upper[sel]));
@@ -492,7 +491,6 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                     is.finite(ert.opt.bound.upper.time.i),
                     ert.opt.bound.upper.time.i >= min(reached.opt.bound.upper.time.ii, na.rm=TRUE));
           ert.opt.bound.upper.time[[i]] <- ert.opt.bound.upper.time.i;
-
 
           reached.opt.bound.upper.fes.ii <- endResults$reached.opt.bound.upper.fes[sel];
           reached.opt.bound.upper.fes.ii <- force(reached.opt.bound.upper.fes.ii);
@@ -547,20 +545,119 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
           ert.opt.bound.lower.time[[i]] <- +Inf;
           ert.opt.bound.lower.fes[[i]] <- +Inf;
         }
-
-
-        ert.opt.bound.lower.time <- numeric(n);
-        ert.opt.bound.lower.fes <- numeric(n);
-        ert.opt.bound.upper.time <- numeric(n);
-        ert.opt.bound.upper.fes <- numeric(n);
-
-        n.opt.bound.lower <- integer(n);
-        n.opt.bound.upper <- integer(n);
-
       }
     }
 
     stopifnot(i == n);
+
+# try to convert to integers
+    total.time.mean <- .try.convert.to.int(total.time.mean);
+    total.time.sd <- .try.convert.to.int(total.time.sd);
+    total.fes.mean <- .try.convert.to.int(total.fes.mean);
+    total.fes.sd <- .try.convert.to.int(total.fes.sd);
+    best.f.mean <- .try.convert.to.int(best.f.mean);
+    best.f.sd <- .try.convert.to.int(best.f.sd);
+    last.improvement.time.mean <- .try.convert.to.int(last.improvement.time.mean);
+    last.improvement.time.sd <- .try.convert.to.int(last.improvement.time.sd);
+    last.improvement.fes.mean <- .try.convert.to.int(last.improvement.fes.mean);
+    last.improvement.fes.sd <- .try.convert.to.int(last.improvement.fes.sd);
+    ert.opt.bound.lower.time <- .try.convert.to.int(ert.opt.bound.lower.time);
+    ert.opt.bound.lower.fes <- .try.convert.to.int(ert.opt.bound.lower.fes);
+    ert.opt.bound.upper.time <- .try.convert.to.int(ert.opt.bound.upper.time);
+    ert.opt.bound.upper.fes <- .try.convert.to.int(ert.opt.bound.upper.fes);
+# done creating and checking the slim chance of integer conversion
+
+# now running final sanity tests
+    stopifnot(length(unique(n.runs)) == 1L,
+              n.runs[[1L]] > 2L,
+              #
+              min(total.time.min) >= 0L,
+              min(total.time.mean) >= 0L,
+              min(total.time.med) >= 0L,
+              min(total.time.max) >= 0L,
+              all(total.time.max >= total.time.min),
+              all(total.time.max >= total.time.mean),
+              all(total.time.max >= total.time.med),
+              all(total.time.mean >= total.time.min),
+              all(total.time.med >= total.time.min),
+              all(total.time.sd >= 0),
+              all(xor(total.time.sd == 0, total.time.max > total.time.min)),
+              #
+              min(total.fes.min) > 0L,
+              min(total.fes.mean) > 0L,
+              min(total.fes.med) > 0L,
+              min(total.fes.max) > 0L,
+              all(total.fes.max >= total.fes.min),
+              all(total.fes.max >= total.fes.mean),
+              all(total.fes.max >= total.fes.med),
+              all(total.fes.mean >= total.fes.min),
+              all(total.fes.med >= total.fes.min),
+              all(total.fes.sd >= 0),
+              all(xor(total.fes.sd == 0, total.fes.max > total.fes.min)),
+              #
+              min(last.improvement.time.min) >= 0L,
+              min(last.improvement.time.mean) >= 0L,
+              min(last.improvement.time.med) >= 0L,
+              min(last.improvement.time.max) >= 0L,
+              all(last.improvement.time.max >= last.improvement.time.min),
+              all(last.improvement.time.max >= last.improvement.time.mean),
+              all(last.improvement.time.max >= last.improvement.time.med),
+              all(last.improvement.time.mean >= last.improvement.time.min),
+              all(last.improvement.time.med >= last.improvement.time.min),
+              all(last.improvement.time.max <= total.time.max),
+              all(last.improvement.time.min <= total.time.min),
+              all(last.improvement.time.med <= total.time.med),
+              all(last.improvement.time.mean <= total.time.mean),
+              all(last.improvement.time.sd >= 0),
+              all(xor(last.improvement.time.sd == 0, last.improvement.time.max > last.improvement.time.min)),
+              #
+              min(last.improvement.fes.min) > 0L,
+              min(last.improvement.fes.mean) > 0L,
+              min(last.improvement.fes.med) > 0L,
+              min(last.improvement.fes.max) > 0L,
+              all(last.improvement.fes.max >= last.improvement.fes.min),
+              all(last.improvement.fes.max >= last.improvement.fes.mean),
+              all(last.improvement.fes.max >= last.improvement.fes.med),
+              all(last.improvement.fes.mean >= last.improvement.fes.min),
+              all(last.improvement.fes.med >= last.improvement.fes.min),
+              all(last.improvement.fes.max <= total.fes.max),
+              all(last.improvement.fes.min <= total.fes.min),
+              all(last.improvement.fes.med <= total.fes.med),
+              all(last.improvement.fes.mean <= total.fes.mean),
+              all(last.improvement.fes.sd >= 0),
+              all(xor(last.improvement.fes.sd == 0, last.improvement.fes.max > last.improvement.fes.min)),
+              #
+              min(best.f.min) > 0L,
+              min(best.f.mean) > 0L,
+              min(best.f.med) > 0L,
+              min(best.f.max) > 0L,
+              all(best.f.max >= best.f.min),
+              all(best.f.max >= best.f.mean),
+              all(best.f.max >= best.f.med),
+              all(best.f.mean >= best.f.min),
+              all(best.f.med >= best.f.min),
+              all(best.f.sd >= 0),
+              all(xor(best.f.sd == 0, best.f.max > best.f.min)),
+              #
+              all(n.opt.bound.upper >= 0L),
+              all(n.opt.bound.upper >= n.opt.bound.upper),
+              all(n.opt.bound.upper >= 0L),
+              all(n.opt.bound.upper <= n.runs),
+              all(n.opt.bound.lower <= n.runs),
+              #
+              all( (n.opt.bound.lower == 0L) == (ert.opt.bound.lower.time >= Inf)),
+              all( (n.opt.bound.lower == 0L) == (ert.opt.bound.lower.fes >= Inf)),
+              all( (n.opt.bound.upper == 0L) == (ert.opt.bound.upper.time >= Inf)),
+              all( (n.opt.bound.upper == 0L) == (ert.opt.bound.upper.fes >= Inf)),
+              #
+              all(ert.opt.bound.lower.time >= 0),
+              all(ert.opt.bound.lower.fes > 0),
+              all(ert.opt.bound.upper.time >= 0),
+              all(ert.opt.bound.upper.fes > 0),
+              #
+              all(ert.opt.bound.lower.time >= ert.opt.bound.upper.time),
+              all(ert.opt.bound.lower.fes >= ert.opt.bound.upper.fes)
+      );
 
     config$logger("done computing statistics, now writing csv file '", file, "'.");
 
@@ -586,22 +683,22 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                          best.f.max=best.f.max,
                          best.f.max.file=best.f.max.file,
                          best.f.sd=best.f.sd,
-                         last.improvement.fes.min=last.improvement.fes.min,
-                         last.improvement.fes.mean=last.improvement.fes.mean,
-                         last.improvement.fes.med=last.improvement.fes.med,
-                         last.improvement.fes.max=last.improvement.fes.max,
-                         last.improvement.fes.sd=last.improvement.fes.sd,
                          last.improvement.time.min=last.improvement.time.min,
                          last.improvement.time.mean=last.improvement.time.mean,
                          last.improvement.time.med=last.improvement.time.med,
                          last.improvement.time.max=last.improvement.time.max,
                          last.improvement.time.sd=last.improvement.time.sd,
-                         ert.opt.bound.lower.time=ert.opt.bound.lower.time,
-                         ert.opt.bound.lower.fes=ert.opt.bound.lower.fes,
+                         last.improvement.fes.min=last.improvement.fes.min,
+                         last.improvement.fes.mean=last.improvement.fes.mean,
+                         last.improvement.fes.med=last.improvement.fes.med,
+                         last.improvement.fes.max=last.improvement.fes.max,
+                         last.improvement.fes.sd=last.improvement.fes.sd,
+                         n.opt.bound.upper=n.opt.bound.upper,
                          ert.opt.bound.upper.time=ert.opt.bound.upper.time,
                          ert.opt.bound.upper.fes=ert.opt.bound.upper.fes,
                          n.opt.bound.lower=n.opt.bound.lower,
-                         n.opt.bound.upper=n.opt.bound.upper,
+                         ert.opt.bound.lower.time=ert.opt.bound.lower.time,
+                         ert.opt.bound.lower.fes=ert.opt.bound.lower.fes,
                          check.names = FALSE),
               file=file,
               row.names=FALSE,
@@ -610,6 +707,54 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     stopifnot(file.exists(file),
               file.size(file) > 50L*n);
     config$logger("file '", file, "' created successfully.");
+
+    rm("endResults");
+    rm("algorithms.all");
+    rm("algorithms.unique");
+    rm("instances.all");
+    rm("instances.unique");
+    rm("instances.names");
+    rm("instances.opt.bound.lower");
+    rm("instances.opt.bound.upper");
+    rm("frame.algorithm");
+    rm("frame.instance");
+    rm("n.runs");
+    rm("total.time.min");
+    rm("total.time.mean");
+    rm("total.time.med");
+    rm("total.time.max");
+    rm("total.time.sd");
+    rm("total.fes.min");
+    rm("total.fes.mean");
+    rm("total.fes.med");
+    rm("total.fes.max");
+    rm("total.fes.sd");
+    rm("best.f.min");
+    rm("best.f.min.file");
+    rm("best.f.mean");
+    rm("best.f.mean.file");
+    rm("best.f.med");
+    rm("best.f.med.file");
+    rm("best.f.max");
+    rm("best.f.max.file");
+    rm("best.f.sd");
+    rm("last.improvement.time.min");
+    rm("last.improvement.time.mean");
+    rm("last.improvement.time.med");
+    rm("last.improvement.time.max");
+    rm("last.improvement.time.sd");
+    rm("last.improvement.fes.min");
+    rm("last.improvement.fes.mean");
+    rm("last.improvement.fes.med");
+    rm("last.improvement.fes.max");
+    rm("last.improvement.fes.sd");
+    rm("n.opt.bound.upper");
+    rm("ert.opt.bound.upper.time");
+    rm("ert.opt.bound.upper.fes");
+    rm("n.opt.bound.lower");
+    rm("ert.opt.bound.lower.time");
+    rm("ert.opt.bound.lower.fes");
+    rm("sel");
   }
 
   stopifnot(file.exists(file),
@@ -618,7 +763,144 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
   result <- read.csv(file, check.names = FALSE);
   result <- force(result);
 
+  stopifnot(is.data.frame(result),
+            nrow(result) > 0L,
+            ncol(result) == 38,
+            colnames(result) == c("algorithm",
+                                  "instance",
+                                  "n.runs",
+                                  "total.time.min",
+                                  "total.time.mean",
+                                  "total.time.med",
+                                  "total.time.max",
+                                  "total.time.sd",
+                                  "total.fes.min",
+                                  "total.fes.mean",
+                                  "total.fes.med",
+                                  "total.fes.max",
+                                  "total.fes.sd",
+                                  "best.f.min",
+                                  "best.f.min.file",
+                                  "best.f.mean",
+                                  "best.f.mean.file",
+                                  "best.f.med",
+                                  "best.f.med.file",
+                                  "best.f.max",
+                                  "best.f.max.file",
+                                  "best.f.sd",
+                                  "last.improvement.time.min",
+                                  "last.improvement.time.mean",
+                                  "last.improvement.time.med",
+                                  "last.improvement.time.max",
+                                  "last.improvement.time.sd",
+                                  "last.improvement.fes.min",
+                                  "last.improvement.fes.mean",
+                                  "last.improvement.fes.med",
+                                  "last.improvement.fes.max",
+                                  "last.improvement.fes.sd",
+                                  "n.opt.bound.upper",
+                                  "ert.opt.bound.upper.time",
+                                  "ert.opt.bound.upper.fes",
+                                  "n.opt.bound.lower",
+                                  "ert.opt.bound.lower.time",
+                                  "ert.opt.bound.lower.fes"),
+#
+            length(unique(result$n.runs)) == 1L,
+            result$n.runs[[1L]] > 2L,
+            #
+            min(result$total.time.min) >= 0L,
+            min(result$total.time.mean) >= 0L,
+            min(result$total.time.med) >= 0L,
+            min(result$total.time.max) >= 0L,
+            all(result$total.time.max >= result$total.time.min),
+            all(result$total.time.max >= result$total.time.mean),
+            all(result$total.time.max >= result$total.time.med),
+            all(result$total.time.mean >= result$total.time.min),
+            all(result$total.time.med >= result$total.time.min),
+            all(result$total.time.sd >= 0),
+            all(xor(result$total.time.sd == 0, result$total.time.max > result$total.time.min)),
+            #
+            min(result$total.fes.min) > 0L,
+            min(result$total.fes.mean) > 0L,
+            min(result$total.fes.med) > 0L,
+            min(result$total.fes.max) > 0L,
+            all(result$total.fes.max >= result$total.fes.min),
+            all(result$total.fes.max >= result$total.fes.mean),
+            all(result$total.fes.max >= result$total.fes.med),
+            all(result$total.fes.mean >= result$total.fes.min),
+            all(result$total.fes.med >= result$total.fes.min),
+            all(result$total.fes.sd >= 0),
+            all(xor(result$total.fes.sd == 0, result$total.fes.max > result$total.fes.min)),
+            #
+            min(result$last.improvement.time.min) >= 0L,
+            min(result$last.improvement.time.mean) >= 0L,
+            min(result$last.improvement.time.med) >= 0L,
+            min(result$last.improvement.time.max) >= 0L,
+            all(result$last.improvement.time.max >= result$last.improvement.time.min),
+            all(result$last.improvement.time.max >= result$last.improvement.time.mean),
+            all(result$last.improvement.time.max >= result$last.improvement.time.med),
+            all(result$last.improvement.time.mean >= result$last.improvement.time.min),
+            all(result$last.improvement.time.med >= result$last.improvement.time.min),
+            all(result$last.improvement.time.max <= result$total.time.max),
+            all(result$last.improvement.time.min <= result$total.time.min),
+            all(result$last.improvement.time.med <= result$total.time.med),
+            all(result$last.improvement.time.mean <= result$total.time.mean),
+            all(result$last.improvement.time.sd >= 0),
+            all(xor(result$last.improvement.time.sd == 0,
+                    result$last.improvement.time.max > result$last.improvement.time.min)),
+            #
+            min(result$last.improvement.fes.min) > 0L,
+            min(result$last.improvement.fes.mean) > 0L,
+            min(result$last.improvement.fes.med) > 0L,
+            min(result$last.improvement.fes.max) > 0L,
+            all(result$last.improvement.fes.max >= result$last.improvement.fes.min),
+            all(result$last.improvement.fes.max >= result$last.improvement.fes.mean),
+            all(result$last.improvement.fes.max >= result$last.improvement.fes.med),
+            all(result$last.improvement.fes.mean >= result$last.improvement.fes.min),
+            all(result$last.improvement.fes.med >= result$last.improvement.fes.min),
+            all(result$last.improvement.fes.max <= result$total.fes.max),
+            all(result$last.improvement.fes.min <= result$total.fes.min),
+            all(result$last.improvement.fes.med <= result$total.fes.med),
+            all(result$last.improvement.fes.mean <= result$total.fes.mean),
+            all(result$last.improvement.fes.sd >= 0),
+            all(xor(result$last.improvement.fes.sd == 0,
+                    result$last.improvement.fes.max > result$last.improvement.fes.min)),
+            #
+            min(result$best.f.min) > 0L,
+            min(result$best.f.mean) > 0L,
+            min(result$best.f.med) > 0L,
+            min(result$best.f.max) > 0L,
+            all(result$best.f.max >= result$best.f.min),
+            all(result$best.f.max >= result$best.f.mean),
+            all(result$best.f.max >= result$best.f.med),
+            all(result$best.f.mean >= result$best.f.min),
+            all(result$best.f.med >= result$best.f.min),
+            all(result$best.f.sd >= 0),
+            all(xor(result$best.f.sd == 0,
+                    result$best.f.max > result$best.f.min)),
+            #
+            all(result$n.opt.bound.upper >= 0L),
+            all(result$n.opt.bound.upper >= result$n.opt.bound.upper),
+            all(result$n.opt.bound.upper >= 0L),
+            all(result$n.opt.bound.upper <= result$n.runs),
+            all(result$n.opt.bound.lower <= result$n.runs),
+            #
+            all( (result$n.opt.bound.lower == 0L) == (result$ert.opt.bound.lower.time >= Inf)),
+            all( (result$n.opt.bound.lower == 0L) == (result$ert.opt.bound.lower.fes >= Inf)),
+            all( (result$n.opt.bound.upper == 0L) == (result$ert.opt.bound.upper.time >= Inf)),
+            all( (result$n.opt.bound.upper == 0L) == (result$ert.opt.bound.upper.fes >= Inf)),
+            #
+            all(result$ert.opt.bound.lower.time >= 0),
+            all(result$ert.opt.bound.lower.fes > 0),
+            all(result$ert.opt.bound.upper.time >= 0),
+            all(result$ert.opt.bound.upper.fes > 0),
+            #
+            all(result$ert.opt.bound.lower.time >= result$ert.opt.bound.upper.time),
+            all(result$ert.opt.bound.lower.fes >= result$ert.opt.bound.upper.fes)
+  );
+
   config$logger("done loading end result statistics from file '", file, "'.");
+  gc();
   options(old.options);
   return(result);
 }

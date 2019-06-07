@@ -13,3 +13,15 @@
   stopifnot(dir.exists(path));
   return(path);
 }
+
+
+.try.convert.to.int <- function(a) {
+  if(all(is.finite(a) & (a >= (-.Machine$integer.max)) & (a <= .Machine$integer.max))) {
+    a.i <- as.integer(a);
+    a.i <- force(a.i);
+    if(all(a.i == a)) {
+      return(a.i);
+    }
+  }
+  return(a);
+}
