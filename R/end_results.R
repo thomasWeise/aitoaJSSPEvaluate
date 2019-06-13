@@ -153,61 +153,55 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
       inst <- which(inst);
       stopifnot(length(inst) == 1L);
 
-      opt.bound.lower <- inst.opt.bound.lower[inst];
+      opt.bound.lower <- inst.opt.bound.lower[[inst]];
       stopifnot(is.integer(opt.bound.lower),
                 length(opt.bound.lower) == 1L,
                 is.finite(opt.bound.lower),
                 opt.bound.lower > 0L);
-      opt.bound.upper <- inst.opt.bound.upper[inst];
+      opt.bound.upper <- inst.opt.bound.upper[[inst]];
       stopifnot(is.integer(opt.bound.upper),
                 length(opt.bound.upper) == 1L,
                 is.finite(opt.bound.upper),
                 opt.bound.upper >= opt.bound.lower);
       rm("inst");
 
-      reached.opt.bound.lower <- (best.f <= opt.bound.lower);
-      reached.opt.bound.lower <- force(reached.opt.bound.lower);
-      if(reached.opt.bound.lower) {
-        reached.opt.bound.upper <- TRUE;
+      reached.opt.bound.upper <- (best.f <= opt.bound.upper);
+      reached.opt.bound.upper <- force(reached.opt.bound.upper);
+      if(reached.opt.bound.upper) {
         reached.opt.bound.upper.f <- best.f;
         reached.opt.bound.upper.fes <- last.improvement.fes;
         reached.opt.bound.upper.time <- last.improvement.time;
-      } else {
-        reached.opt.bound.upper <- (best.f <= opt.bound.upper);
-        reached.opt.bound.upper <- force(reached.opt.bound.upper);
-        if(reached.opt.bound.upper) {
-          reached.opt.bound.upper.f <- best.f;
-          reached.opt.bound.upper.fes <- last.improvement.fes;
-          reached.opt.bound.upper.time <- last.improvement.time;
 
-          while((len > 1L) && (f[[len - 1L]] <= opt.bound.upper)) {
-            len <- len - 1L;
-            len <- force(len);
-            reached.opt.bound.upper.f <- f[[len]];
-            reached.opt.bound.upper.f <- force(reached.opt.bound.upper.f);
-            stopifnot(reached.opt.bound.upper.f >= best.f,
-                      reached.opt.bound.upper.f <= opt.bound.upper);
-            reached.opt.bound.upper.fes <- fes[[len]];
-            reached.opt.bound.upper.fes <- force(reached.opt.bound.upper.fes);
-            reached.opt.bound.upper.time <- t[[len]];
-            reached.opt.bound.upper.time <- force(reached.opt.bound.upper.time);
-            stopifnot(reached.opt.bound.upper.time >= 0L,
-                      reached.opt.bound.upper.time <= total.time,
-                      reached.opt.bound.upper.time <= last.improvement.time,
-                      is.integer(reached.opt.bound.upper.time),
-                      is.finite(reached.opt.bound.upper.time),
-                      reached.opt.bound.upper.fes >= 0L,
-                      reached.opt.bound.upper.fes < total.fes,
-                      reached.opt.bound.upper.fes <= last.improvement.fes,
-                      is.integer(reached.opt.bound.upper.fes),
-                      is.finite(reached.opt.bound.upper.fes));
-          }
-
-        } else {
-          reached.opt.bound.upper.f <- NA_integer_;
-          reached.opt.bound.upper.fes <- NA_integer_;
-          reached.opt.bound.upper.time <- NA_integer_;
+        while((len > 1L) && (f[[len - 1L]] <= opt.bound.upper)) {
+          len <- len - 1L;
+          len <- force(len);
+          reached.opt.bound.upper.f <- f[[len]];
+          reached.opt.bound.upper.f <- force(reached.opt.bound.upper.f);
+          stopifnot(reached.opt.bound.upper.f >= best.f,
+                    reached.opt.bound.upper.f <= opt.bound.upper);
+          reached.opt.bound.upper.fes <- fes[[len]];
+          reached.opt.bound.upper.fes <- force(reached.opt.bound.upper.fes);
+          reached.opt.bound.upper.time <- t[[len]];
+          reached.opt.bound.upper.time <- force(reached.opt.bound.upper.time);
+          stopifnot(reached.opt.bound.upper.time >= 0L,
+                    reached.opt.bound.upper.time <= total.time,
+                    reached.opt.bound.upper.time <= last.improvement.time,
+                    is.integer(reached.opt.bound.upper.time),
+                    is.finite(reached.opt.bound.upper.time),
+                    reached.opt.bound.upper.fes >= 0L,
+                    reached.opt.bound.upper.fes < total.fes,
+                    reached.opt.bound.upper.fes <= last.improvement.fes,
+                    is.integer(reached.opt.bound.upper.fes),
+                    is.finite(reached.opt.bound.upper.fes));
         }
+
+        reached.opt.bound.lower <- (best.f <= opt.bound.lower);
+        reached.opt.bound.lower <- force(reached.opt.bound.lower);
+      } else {
+        reached.opt.bound.lower <- FALSE;
+        reached.opt.bound.upper.f <- NA_integer_;
+        reached.opt.bound.upper.fes <- NA_integer_;
+        reached.opt.bound.upper.time <- NA_integer_;
       }
 
       rm("f");
@@ -269,6 +263,10 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
               all(is.logical(frame.reached.opt.bound.upper)),
               all(!is.na(frame.reached.opt.bound.upper)),
 
+              all(xor(is.na(frame.reached.opt.bound.upper.f), frame.reached.opt.bound.upper)),
+              all(xor(is.na(frame.reached.opt.bound.upper.fes), frame.reached.opt.bound.upper)),
+              all(xor(is.na(frame.reached.opt.bound.upper.time), frame.reached.opt.bound.upper)),
+
               all(is.integer(frame.reached.opt.bound.upper.f)),
               all((frame.reached.opt.bound.upper.f > 0L) | is.na(frame.reached.opt.bound.upper.f)),
 
@@ -276,7 +274,18 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
               all((frame.reached.opt.bound.upper.fes > 0L) | is.na(frame.reached.opt.bound.upper.fes)),
 
               all(is.integer(frame.reached.opt.bound.upper.time)),
-              all((frame.reached.opt.bound.upper.time > 0L) | is.na(frame.reached.opt.bound.upper.time))
+              all((frame.reached.opt.bound.upper.time > 0L) | is.na(frame.reached.opt.bound.upper.time)),
+
+              all( (!frame.reached.opt.bound.lower) | (frame.reached.opt.bound.upper.time <= frame.last.improvement.time)),
+              all( (!frame.reached.opt.bound.lower) | (frame.reached.opt.bound.upper.fes <= frame.last.improvement.fes)),
+
+              all(is.na(frame.reached.opt.bound.upper.fes) |
+                  (!frame.reached.opt.bound.lower) |
+                  (frame.last.improvement.fes >= frame.reached.opt.bound.upper.fes)),
+
+              all(is.na(frame.reached.opt.bound.upper.time) |
+                    (!frame.reached.opt.bound.lower) |
+                    (frame.last.improvement.time >= frame.reached.opt.bound.upper.time))
               );
 
 
@@ -345,9 +354,28 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
             all(is.finite(result$last.improvement.time)),
             all(is.logical(result$reached.opt.bound.lower)),
             all(is.logical(result$reached.opt.bound.upper)),
-            xor(is.na(result$reached.opt.bound.upper.f), result$reached.opt.bound.upper),
-            xor(is.na(result$reached.opt.bound.upper.fes), result$reached.opt.bound.upper),
-            xor(is.na(result$reached.opt.bound.upper.time), result$reached.opt.bound.upper));
+            all(xor(is.na(result$reached.opt.bound.upper.f), result$reached.opt.bound.upper)),
+            all(xor(is.na(result$reached.opt.bound.upper.fes), result$reached.opt.bound.upper)),
+            all(xor(is.na(result$reached.opt.bound.upper.time), result$reached.opt.bound.upper)),
+
+            all(is.integer(result$reached.opt.bound.upper.f)),
+            all((result$reached.opt.bound.upper.f > 0L) | is.na(result$reached.opt.bound.upper.f)),
+
+            all(is.integer(result$reached.opt.bound.upper.fes)),
+            all((result$reached.opt.bound.upper.fes > 0L) | is.na(result$reached.opt.bound.upper.fes)),
+
+            all(is.integer(result$reached.opt.bound.upper.time)),
+            all((result$reached.opt.bound.upper.time > 0L) | is.na(result$reached.opt.bound.upper.time)),
+
+            all( (!result$reached.opt.bound.lower) | (result$reached.opt.bound.upper.time <= result$last.improvement.time)),
+            all( (!result$reached.opt.bound.lower) | (result$reached.opt.bound.upper.fes <= result$last.improvement.fes)),
+
+            all(is.na(result$reached.opt.bound.upper.fes) |
+                  (!result$reached.opt.bound.lower) |
+                  (result$last.improvement.fes >= result$reached.opt.bound.upper.fes)),
+            all(is.na(result$reached.opt.bound.upper.time) |
+                  (!result$reached.opt.bound.lower) |
+                  (result$last.improvement.time >= result$reached.opt.bound.upper.time)));
 
   config$logger("done loading end results from file '", file, "'.");
   options(old.options);

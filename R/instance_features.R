@@ -23,7 +23,18 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
 
     features <- config$instance.features();
     stopifnot(is.data.frame(features),
-              nrow(features) >= n);
+              nrow(features) >= n,
+              all(is.integer(features$inst.jobs)),
+              all(features$inst.jobs > 0L),
+              all(is.integer(features$inst.machines)),
+              all(features$inst.machines > 0L),
+              all(is.integer(features$inst.opt.bound.lower)),
+              all(features$inst.opt.bound.lower > 0L),
+              all(is.integer(features$inst.opt.bound.upper)),
+              all(features$inst.opt.bound.upper > 0L),
+              all(is.integer(features$inst.solutions.num)),
+              all(features$inst.solutions.num >= 0L),
+              all(features$inst.opt.bound.upper >= features$inst.opt.bound.lower));
 
     names <- as.character(unname(unlist(features$inst.name)));
     stopifnot(all(vapply(instances, function(i) sum(names == i) == 1L, TRUE)));
@@ -45,7 +56,8 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
               all(is.integer(features$inst.opt.bound.upper)),
               all(features$inst.opt.bound.upper > 0L),
               all(is.integer(features$inst.solutions.num)),
-              all(features$inst.solutions.num >= 0L));
+              all(features$inst.solutions.num >= 0L),
+              all(features$inst.opt.bound.upper >= features$inst.opt.bound.lower));
 
     config$logger("done selecting instances, now writing results to file '", file, "'.");
 
@@ -82,7 +94,8 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
             all(is.integer(result$inst.opt.bound.upper)),
             all(result$inst.opt.bound.upper > 0L),
             all(is.integer(result$inst.solutions.num)),
-            all(result$inst.solutions.num >= 0L));
+            all(result$inst.solutions.num >= 0L),
+            all(result$inst.opt.bound.lower <= result$inst.opt.bound.upper));
   config$logger("done loading instance features from file '", file, "'.");
   options(old.options);
   return(result);

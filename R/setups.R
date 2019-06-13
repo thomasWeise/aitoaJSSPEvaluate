@@ -233,7 +233,11 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
               length(frame.algo) == length(frame.inst),
               length(frame.inst) == length(frame.dir),
               length(frame.dir) == length(frame.seeds),
-              length(frame.seeds) == length(frame.files));
+              length(frame.seeds) == length(frame.files),
+              length(unique(frame.inst)) == instances.len,
+              instances.len >= config$min.instances,
+              length(unique(frame.algo)) == algorithms.len,
+              (length(frame.id)/(instances.len*algorithms.len)) >= config$min.runs);
 
     write.csv(data.frame(id=frame.id,
                          algorithm=frame.algo,
@@ -275,6 +279,11 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
             all(startsWith(as.character(result$seed), "$")),
             all(is.factor(result$dir) | is.character(result$dir)),
             all(is.factor(result$file) | is.character(result$file)));
+  instances.len <- length(unique(result$instance));
+  algorithms.len <- length(unique(result$algorithm));
+  stopifnot(instances.len >= config$min.instances,
+            (nrow(result)/(instances.len*algorithms.len)) == as.integer((nrow(result)/(instances.len*algorithms.len))),
+            (nrow(result)/(instances.len*algorithms.len)) >= config$min.runs);
   gc();
   config$logger("done loading list of setups from file '", file, "'.");
   options(old.options);
