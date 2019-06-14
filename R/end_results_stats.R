@@ -53,13 +53,15 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
     instances <- aitoa.instance.features.frame(config);
     instances.names <- as.character(unname(unlist(instances$inst.name)));
-    stopifnot(identical(sort(instances.names), instances.unique));
-    instances.opt.bound.lower <- unname(unlist(instances$inst.opt.bound.lower));
-    instances.opt.bound.upper <- unname(unlist(instances$inst.opt.bound.upper));
+    o <- order(instances.names);
+    stopifnot(identical(instances.names[o], instances.unique));
+    instances.opt.bound.lower <- unname(unlist(instances$inst.opt.bound.lower))[o];
+    instances.opt.bound.upper <- unname(unlist(instances$inst.opt.bound.upper))[o];
     stopifnot(length(instances.opt.bound.lower) == length(instances.opt.bound.upper),
               length(instances.opt.bound.lower) == length(instances.names),
               all(instances.opt.bound.lower) > 0L,
               all(instances.opt.bound.upper) > 0L,
+              all(instances.opt.bound.upper >= instances.opt.bound.lower),
               all(is.integer(instances.opt.bound.lower)),
               all(is.integer(instances.opt.bound.upper)));
     rm("instances");
@@ -96,6 +98,12 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     best.f.max.file <- character(n);
     best.f.sd <- numeric(n);
 
+    best.f.rel.min <- numeric(n);
+    best.f.rel.mean <- numeric(n);
+    best.f.rel.med <- numeric(n);
+    best.f.rel.max <- numeric(n);
+    best.f.rel.sd <- numeric(n);
+
     last.improvement.fes.min <- integer(n);
     last.improvement.fes.mean <- numeric(n);
     last.improvement.fes.med <- integer(n);
@@ -115,6 +123,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
     n.opt.bound.lower <- integer(n);
     n.opt.bound.upper <- integer(n);
+
+    endResults.best.f.rel <- rep(NA_real_, nrow(endResults));
 
 # the internal function for computing the ert
     .ert <- function(times, sel, n.reached, n.total, time.max) {
@@ -317,7 +327,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 # computing stats for the final/best result
         best.f <- unname(unlist(endResults$best.f[sel]));
         stopifnot(is.integer(best.f),
-                  length(best.f) == count);
+                  length(best.f) == count,
+                  all(best.f >= opt.bound.lower));
 
         best.f.min.i <- min(best.f);
         best.f.min.i <- force(best.f.min.i);
@@ -415,6 +426,50 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
         best.f.max.file.i <- best.f.max.file.i[[1L]];
         best.f.max.file.i <- force(best.f.max.file.i);
         best.f.max.file[[i]] <- best.f.max.file.i;
+
+
+
+        # computing stats for the final/best result
+        best.f.rel <- (best.f - opt.bound.lower) / opt.bound.lower;
+        stopifnot(all(best.f.rel >= 0),
+                  all(is.finite(best.f.rel)));
+        endResults.best.f.rel[sel] <- best.f.rel;
+
+        best.f.rel.min.i <- min(best.f.rel);
+        best.f.rel.min.i <- force(best.f.rel.min.i);
+        stopifnot(best.f.rel.min.i >= 0,
+                  is.finite(best.f.rel.min.i));
+        best.f.rel.min[[i]] <- best.f.rel.min.i;
+
+        best.f.rel.mean.i <- mean(best.f.rel);
+        best.f.rel.mean.i <- force(best.f.rel.mean.i);
+        stopifnot(best.f.rel.mean.i >= best.f.rel.min.i,
+                  is.finite(best.f.rel.mean.i));
+        best.f.rel.mean[[i]] <- best.f.rel.mean.i;
+
+        best.f.rel.med.i <- median(best.f.rel);
+        best.f.rel.med.i <- force(best.f.rel.med.i);
+        stopifnot(best.f.rel.med.i >= best.f.rel.min.i,
+                  is.finite(best.f.rel.med.i));
+        best.f.rel.med[[i]] <- best.f.rel.med.i;
+
+        best.f.rel.max.i <- max(best.f.rel);
+        best.f.rel.max.i <- force(best.f.rel.max.i);
+        stopifnot(best.f.rel.max.i >= best.f.rel.min.i,
+                  best.f.rel.max.i >= best.f.rel.med.i,
+                  best.f.rel.max.i >= best.f.rel.mean.i,
+                  is.finite(best.f.rel.max.i));
+        best.f.rel.max[[i]] <- best.f.rel.max.i;
+
+        best.f.rel.sd.i <- sd(best.f.rel);
+        best.f.rel.sd.i <- force(best.f.rel.sd.i);
+        stopifnot(best.f.rel.sd.i >= 0,
+                  is.finite(best.f.rel.sd.i));
+        best.f.rel.sd[[i]] <- best.f.rel.sd.i;
+        stopifnot(xor((best.f.rel.sd.i <= 0), (best.f.rel.max.i > best.f.rel.min.i)),
+                  xor((best.f.rel.sd.i  > 0), (best.f.rel.max.i == best.f.rel.min.i)),
+                  (best.f.rel.sd.i == 0) == (best.f.sd.i == 0));
+
 
 # now computing stats for the last improvement time
         last.improvement.time <- unname(unlist(endResults$last.improvement.time[sel]));
@@ -951,6 +1006,10 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       return(ranks2);
     }
     inst.ranks.for.algo.best.f <- .inst.ranks.for.algos(endResults$best.f);
+    stopifnot(all(is.finite(endResults.best.f.rel)),
+              all(endResults.best.f.rel >= 0));
+    inst.ranks.for.algo.best.f.rel <- .inst.ranks.for.algos(endResults.best.f.rel);
+    rm("endResults.best.f.rel");
 
     stopifnot(#
               all(algo.ranks.on.inst.ert.opt.bound.upper.time > 0),
@@ -1017,9 +1076,9 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
               all(algo.ranks.on.inst.best.f > 0L),
               length(algo.ranks.on.inst.best.f) == n,
 #
-              all(is.finite(inst.ranks.for.algo.best.f)),
-              all(inst.ranks.for.algo.best.f > 0L),
-              length(inst.ranks.for.algo.best.f) == n
+              all(is.finite(inst.ranks.for.algo.best.f.rel)),
+              all(inst.ranks.for.algo.best.f.rel > 0L),
+              length(inst.ranks.for.algo.best.f.rel) == n
               );
 
     config$logger("done computing statistics, now writing csv file '", file, "'.");
@@ -1046,6 +1105,11 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                          best.f.max,
                          best.f.max.file,
                          best.f.sd,
+                         best.f.rel.min,
+                         best.f.rel.mean,
+                         best.f.rel.med,
+                         best.f.rel.max,
+                         best.f.rel.sd,
                          last.improvement.time.min,
                          last.improvement.time.mean,
                          last.improvement.time.med,
@@ -1064,6 +1128,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                          ert.opt.bound.lower.fes,
                          algo.ranks.on.inst.best.f,
                          inst.ranks.for.algo.best.f,
+                         inst.ranks.for.algo.best.f.rel,
                          algo.ranks.on.inst.ert.opt.bound.upper.time,
                          algo.ranks.on.inst.ert.opt.bound.upper.fes,
                          algo.ranks.on.inst.n.opt.bound.upper,
@@ -1115,6 +1180,11 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("best.f.max");
     rm("best.f.max.file");
     rm("best.f.sd");
+    rm("best.f.rel.min");
+    rm("best.f.rel.mean");
+    rm("best.f.rel.med");
+    rm("best.f.rel.max");
+    rm("best.f.rel.sd");
     rm("last.improvement.time.min");
     rm("last.improvement.time.mean");
     rm("last.improvement.time.med");
@@ -1132,6 +1202,9 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("ert.opt.bound.lower.time");
     rm("ert.opt.bound.lower.fes");
     rm("sel");
+    rm("algo.ranks.on.inst.best.f");
+    rm("inst.ranks.for.algo.best.f");
+    rm("inst.ranks.for.algo.best.f.rel");
     rm("algo.ranks.on.inst.ert.opt.bound.upper.time");
     rm("algo.ranks.on.inst.ert.opt.bound.upper.fes");
     rm("algo.ranks.on.inst.n.opt.bound.upper");
@@ -1156,7 +1229,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
-            ncol(result) == 52L,
+            ncol(result) == 58L,
             colnames(result) == c("algorithm",
                                   "instance",
                                   "n.runs",
@@ -1179,6 +1252,11 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                                   "best.f.max",
                                   "best.f.max.file",
                                   "best.f.sd",
+                                  "best.f.rel.min",
+                                  "best.f.rel.mean",
+                                  "best.f.rel.med",
+                                  "best.f.rel.max",
+                                  "best.f.rel.sd",
                                   "last.improvement.time.min",
                                   "last.improvement.time.mean",
                                   "last.improvement.time.med",
@@ -1197,6 +1275,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                                   "ert.opt.bound.lower.fes",
                                   "algo.ranks.on.inst.best.f",
                                   "inst.ranks.for.algo.best.f",
+                                  "inst.ranks.for.algo.best.f.rel",
                                   "algo.ranks.on.inst.ert.opt.bound.upper.time",
                                   "algo.ranks.on.inst.ert.opt.bound.upper.fes",
                                   "algo.ranks.on.inst.n.opt.bound.upper",
@@ -1342,8 +1421,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
             all(is.finite(result$algo.ranks.on.inst.best.f)),
             all(result$algo.ranks.on.inst.best.f > 0L),
             #
-            all(is.finite(result$inst.ranks.for.algo.best.f)),
-            all(result$inst.ranks.for.algo.best.f > 0L)
+            all(is.finite(result$inst.ranks.for.algo.best.f.rel)),
+            all(result$inst.ranks.for.algo.best.f.rel > 0L)
   );
 
   config$logger("done loading end result statistics from file '", file, "'.");
