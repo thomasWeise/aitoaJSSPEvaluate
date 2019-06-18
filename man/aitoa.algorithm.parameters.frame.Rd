@@ -10,7 +10,7 @@ aitoa.algorithm.parameters.frame(config = aitoa.config(),
 \arguments{
 \item{config}{the configuration}
 
-\item{parses}{the algorithm parameter parsers}
+\item{parsers}{the algorithm parameter parsers}
 }
 \value{
 a data frame with the algorithm parameters

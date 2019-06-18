@@ -2,7 +2,7 @@
 #' @title Obtain a Data Frame with the Parameters of All Present Algorithms
 #' @description Obtain a data frame which will contain the parameters of all algorithms
 #' @param config the configuration
-#' @param parses the algorithm parameter parsers
+#' @param parsers the algorithm parameter parsers
 #' @return a data frame with the algorithm parameters
 #' @include utils.R
 #' @include config.R
