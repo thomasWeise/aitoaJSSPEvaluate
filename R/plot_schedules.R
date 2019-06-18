@@ -3,7 +3,7 @@
 #' @include config.R
 .plot.gantt <- function(instance, config, path, value, m) {
   path <- file.path(config$dir.results, path);
-  stopifnot(file.exists(path));
+  stopifnot(file.exists(path), file.size(path) > 100L);
   config$logger("loading file ", path);
   data <- trimws(suppressWarnings(readLines(con=path)));
   stopifnot(length(data) > 4L);
@@ -31,7 +31,7 @@
   rm("code.2");
   rm("code.3");
 
-  config$logger("finished extracting code: ", code);
+  config$logger("finished extracting code from file ", path);
   eval(as.expression(parse(text=code)));
   rm("code");
   config$logger("code parsed and executed");
@@ -49,6 +49,10 @@
          bg=col);
 }
 
+#' @title Plot the Gantt Charts of the Median and Best Results
+#' @description Plot the Gantt charts of the median and best solutions.
+#' @param config the configuration
+#' @return a list of paths to the generated graphics files
 #' @include end_results_stats.R
 #' @include utils.R
 #' @include graphics.R
@@ -72,8 +76,8 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
   stopifnot(length(name.1) == length(setups),
             length(unique(name.1)) == length(name.1));
   name.1.in.setups <- vapply(name.1, function(nn) which(setups==nn), 1L);
-  rm("name.1.in.setups");
   stopifnot(all(name.1.in.setups > 0L), all(name.1.in.setups <= length(setups)));
+  rm("name.1.in.setups");
   setups.in.name.1 <- vapply(setups, function(nn) which(name.1==nn), 1L);
   stopifnot(all(setups.in.name.1 > 0L), all(setups.in.name.1 <= length(name.1)));
   rm("name.1");
@@ -89,6 +93,11 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
 
   config$logger("found ", length(setups), " setups");
 
+  goal.length <- length(setups) * 2L;
+  stopifnot(goal.length > 1L);
+  paths <- character(goal.length);
+  index <- 0L;
+
   for(i in seq_along(setups)) {
     setup <- setups[[i]];
     stopifnot(!is.null(setup), !is.na(setup));
@@ -103,44 +112,66 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
     stopifnot(length.instances > 0L, length.instances == length(unique(instances)));
     config$logger("found ", length.instances, " instances for setup ", setup);
 
-    dir.med <- .dir.eval("graphics", "gantt", "med", config=config);
+    plot.tasks <- list(
+      list(prefix="med",
+           file=unname(unlist(frame.setup$best.f.med.file)),
+           value=unname(unlist(frame.setup$best.f.med))),
+      list(prefix="min",
+           file=unname(unlist(frame.setup$best.f.min.file)),
+           value=unname(unlist(frame.setup$best.f.min)))
+    );
 
-    file <- file.path(dir.med, .graphics.name(paste("jssp_gantt", name, "med", sep="_", collapse="_")));
-      .graphic(config=config,
-               path=file,
-               width=6L,
-               height=(2.15*length(instances)),
-               expr = {
-                 mar <- 0.5*par()$mar;
-                 mar[3L] <- 0.25 * mar[3L];
-                 mar[1L] <- 0.85 * mar[1L];
-                 mar[4L] <- 0.15 * mar[4L];
-                 p1 <- par(cex=0.78, mar=mar);
-                 p2 <- par(mfrow=c(length(instances), 1L));
-                 for(instance in instances) {
-                   sel <- frame.setup$instance == instance;
-                   stopifnot(sum(sel) == 1L);
-                   sel <- which(sel);
-                   stopifnot(length(sel) == 1L);
-                   m <- features$inst.name == instance;
-                   stopifnot(sum(m) == 1L);
-                   m <- which(m);
-                   stopifnot(length(m) == 1L);
-                   .plot.gantt(instance,
-                               config,
-                               frame.setup$best.f.med.file[[sel]],
-                               frame.setup$best.f.med[[sel]],
-                               features$inst.machines[[m]]);
-                 }
-                 par(p2);
-                 par(p1);
-               });
+
+
+    for(plot.task in plot.tasks) {
+
+      .dir <- .dir.eval("graphics", "gantt", plot.task$prefix, config=config);
+
+      file <- file.path(.dir, .graphics.name(paste("jssp_gantt", name,
+                                plot.task$prefix, sep="_", collapse="_")));
+      index <- index + 1L;
+      paths[[index]] <- .graphic(config=config,
+                           path=file,
+                           width=6L,
+                           height=(2.15*length(instances)),
+                           expr = {
+                             mar <- 0.5*par()$mar;
+                             mar[3L] <- 0.25 * mar[3L];
+                             mar[1L] <- 0.85 * mar[1L];
+                             mar[4L] <- 0.15 * mar[4L];
+                             p1 <- par(cex=0.78, mar=mar);
+                             p2 <- par(mfrow=c(length(instances), 1L));
+                             for(instance in instances) {
+                               sel <- (frame.setup$instance == instance);
+                               stopifnot(sum(sel) == 1L);
+                               sel <- which(sel);
+                               stopifnot(length(sel) == 1L);
+                               m <- (features$inst.name == instance);
+                               stopifnot(sum(m) == 1L);
+                               m <- which(m);
+                               stopifnot(length(m) == 1L);
+                               .plot.gantt(instance,
+                                           config,
+                                           plot.task$file[[sel]],
+                                           plot.task$value[[sel]],
+                                           features$inst.machines[[m]]);
+                             }
+                             par(p2);
+                             par(p1);
+                           });
+    }
 
     rm("frame.setup");
   }
 
+  paths <- force(paths);
+  stopifnot(index == length(paths),
+            all(!is.na(paths)),
+            all(nchar(paths) > 1L),
+            all(file.exists(paths)));
   rm("features");
   rm("frame");
   rm("names");
-  gc();
+  invisible(gc());
+  return(paths);
 }

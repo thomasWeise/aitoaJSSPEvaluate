@@ -1,4 +1,12 @@
 .graphics.name <- function(base) {
+  base <- gsub("%", "_", base, fixed=TRUE);
+  l2 <- nchar(base);
+  repeat {
+    base <- gsub("__", "_", base, fixed=TRUE);
+    l1 <- l2;
+    l2 <- nchar(base);
+    if(l2 >= l1) { break; }
+  }
   paste0(base, ".svg");
 }
 
