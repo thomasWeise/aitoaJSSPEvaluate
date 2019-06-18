@@ -54,7 +54,7 @@ aitoa.load.log.file <- function(file,
   stopifnot(length(consumedTime) > 0L);
   consumedTime <- as.integer(trimws(strsplit(data[consumedTime[[1L]]],":", fixed=TRUE)[[1L]][2L]));
   consumedTime <- force(consumedTime);
-  check <- ((consumedTime > 0L) && is.finite(consumedTime));
+  check <- ((consumedTime >= 0L) && is.finite(consumedTime));
   check <- force(check);
   stopifnot(check);
 
@@ -117,9 +117,6 @@ aitoa.load.log.file <- function(file,
   stopifnot(fes[l] == consumedFEs,
               t[l] == consumedTime);
 
-  before <- 1L:(l-1L);
-  after  <- 2L:l;
-
   minLength <- 1L;
   if(startPointAdded) { minLength <- minLength + 1L; }
   if(endPointAdded) { minLength <- minLength + 1L; }
@@ -137,10 +134,15 @@ aitoa.load.log.file <- function(file,
             all(fes <= consumedFEs),
             all(t >= 0L),
             all(t <= consumedTime),
-            all(f >= 0L),
-            all(f[before] >= f[after]),
-            all(fes[before] <= fes[after]),
-            all(t[before] <= t[after]));
+            all(f >= 0L));
+
+  if(l > 1L) {
+    before <- 1L:(l-1L);
+    after  <- 2L:l;
+    stopifnot(all(f[before] >= f[after]),
+              all(fes[before] <= fes[after]),
+              all(t[before] <= t[after]));
+  }
 
   if(endPointAdded) {
     if(l > 2L) {

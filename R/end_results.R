@@ -253,7 +253,7 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
               all(is.integer(frame.last.improvement.fes)),
 
               all(is.finite(frame.last.improvement.time)),
-              all(frame.last.improvement.time > 0L),
+              all(frame.last.improvement.time >= 0L),
               all(frame.last.improvement.time <= frame.total.time),
               all(is.integer(frame.last.improvement.time)),
 
@@ -274,7 +274,7 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
               all((frame.reached.opt.bound.upper.fes > 0L) | is.na(frame.reached.opt.bound.upper.fes)),
 
               all(is.integer(frame.reached.opt.bound.upper.time)),
-              all((frame.reached.opt.bound.upper.time > 0L) | is.na(frame.reached.opt.bound.upper.time)),
+              all((frame.reached.opt.bound.upper.time >= 0L) | is.na(frame.reached.opt.bound.upper.time)),
 
               all( (!frame.reached.opt.bound.lower) | (frame.reached.opt.bound.upper.time <= frame.last.improvement.time)),
               all( (!frame.reached.opt.bound.lower) | (frame.reached.opt.bound.upper.fes <= frame.last.improvement.fes)),
@@ -342,7 +342,7 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
             all(is.factor(result$instance)),
             all(is.factor(result$seed)),
             all(is.integer(result$total.time)),
-            all(result$total.time > 0L),
+            all(result$total.time >= 0L),
             all(is.integer(result$total.fes)),
             all(result$total.fes > 0L),
             all(is.integer(result$best.f)),
@@ -365,7 +365,7 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
             all((result$reached.opt.bound.upper.fes > 0L) | is.na(result$reached.opt.bound.upper.fes)),
 
             all(is.integer(result$reached.opt.bound.upper.time)),
-            all((result$reached.opt.bound.upper.time > 0L) | is.na(result$reached.opt.bound.upper.time)),
+            all((result$reached.opt.bound.upper.time >= 0L) | is.na(result$reached.opt.bound.upper.time)),
 
             all( (!result$reached.opt.bound.lower) | (result$reached.opt.bound.upper.time <= result$last.improvement.time)),
             all( (!result$reached.opt.bound.lower) | (result$reached.opt.bound.upper.fes <= result$last.improvement.fes)),

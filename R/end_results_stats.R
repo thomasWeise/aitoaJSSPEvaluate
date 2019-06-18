@@ -478,13 +478,13 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
         last.improvement.time.min.i <- min(last.improvement.time);
         last.improvement.time.min.i <- force(last.improvement.time.min.i);
-        stopifnot(last.improvement.time.min.i > 0,
+        stopifnot(last.improvement.time.min.i >= 0,
                   is.finite(last.improvement.time.min.i));
         last.improvement.time.min.i.int <- as.integer(last.improvement.time.min.i);
         last.improvement.time.min.i.int <- force(last.improvement.time.min.i.int);
         stopifnot(last.improvement.time.min.i == last.improvement.time.min.i.int,
                   is.finite(last.improvement.time.min.i.int),
-                  last.improvement.time.min.i.int > 0L);
+                  last.improvement.time.min.i.int >= 0L);
         last.improvement.time.min[[i]] <- last.improvement.time.min.i.int;
 
         last.improvement.time.mean.i <- mean(last.improvement.time);
