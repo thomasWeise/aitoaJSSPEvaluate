@@ -6,6 +6,7 @@ test_that("Test aitoa.algorithm.parameters", {
   r1 <- aitoa.algorithm.parameters.rs("rs");
   r2 <- aitoa.algorithm.parameters("rs");
   expect_identical(r1, r2);
+  expect_identical(r1$algo.name, "rs");
   expect_identical(r1$algo.algorithm, "rs");
   expect_identical(r1$algo.representation, "default");
   expect_identical(r1$algo.is.hybrid, FALSE);
@@ -13,10 +14,28 @@ test_that("Test aitoa.algorithm.parameters", {
   expect_identical(r1$algo.mu, 0L);
   expect_identical(r1$algo.lambda, 1L);
   expect_identical(r1$algo.binary.rate, 0);
+  expect_identical(r1$algo.restarts, TRUE);
+  expect_identical(r1$algo.restarts.strategy, "FEbased");
+  expect_identical(r1$algo.restarts.iterations, 1L);
+  expect_identical(r1$algo.restarts.incrementFactor, 0);
+
+  r1 <- aitoa.algorithm.parameters.rs("1rs");
+  r2 <- aitoa.algorithm.parameters("1rs");
+  expect_identical(r1, r2);
+  expect_identical(r1$algo.name, "1rs");
+  expect_identical(r1$algo.algorithm, "rs");
+  expect_identical(r1$algo.representation, "default");
+  expect_identical(r1$algo.is.hybrid, FALSE);
+  expect_identical(r1$algo.fitness, "direct");
+  expect_identical(r1$algo.mu, 0L);
+  expect_identical(r1$algo.lambda, 1L);
+  expect_identical(r1$algo.binary.rate, 0);
+  expect_identical(r1$algo.restarts, FALSE);
 
   r1 <- aitoa.algorithm.parameters.hc("hc_1swapR");
   r2 <- aitoa.algorithm.parameters("hc_1swapR");
   expect_identical(r1, r2);
+  expect_identical(r1$algo.name, "hc_1swap");
   expect_identical(r1$algo.algorithm, "hc");
   expect_identical(r1$algo.representation, "default");
   expect_identical(r1$algo.operator.unary, "1swapR");
@@ -30,11 +49,29 @@ test_that("Test aitoa.algorithm.parameters", {
   r1 <- aitoa.algorithm.parameters.hc("hc_rs_256_0d05_1swapR");
   r2 <- aitoa.algorithm.parameters("hc_rs_256_0d05_1swapR");
   expect_identical(r1, r2);
+  expect_identical(r1$algo.name, "hcr_256+5%_1swap");
   expect_identical(r1$algo.algorithm, "hc");
   expect_identical(r1$algo.representation, "default");
   expect_identical(r1$algo.operator.unary, "1swapR");
-  expect_identical(r1$algo.restarts.strategy, 256L);
-  expect_identical(r1$algo.restarts.parameter, 0.05);
+  expect_identical(r1$algo.restarts.strategy, "FEbased");
+  expect_identical(r1$algo.restarts.iterations, 256L);
+  expect_identical(r1$algo.restarts.incrementFactor, 0.05);
+  expect_identical(r1$algo.restarts, TRUE);
+  expect_identical(r1$algo.is.hybrid, FALSE);
+  expect_identical(r1$algo.fitness, "direct");
+  expect_identical(r1$algo.mu, 1L);
+  expect_identical(r1$algo.lambda, 1L);
+  expect_identical(r1$algo.binary.rate, 0);
+
+  r1 <- aitoa.algorithm.parameters.hc("hc_rs_mxn_0d05_1swapR");
+  r2 <- aitoa.algorithm.parameters("hc_rs_mxn_0d05_1swapR");
+  expect_identical(r1, r2);
+  expect_identical(r1$algo.algorithm, "hc");
+  expect_identical(r1$algo.representation, "default");
+  expect_identical(r1$algo.operator.unary, "1swapR");
+  expect_identical(r1$algo.restarts.strategy, "FEbased");
+  expect_identical(r1$algo.restarts.iterations, "mxn");
+  expect_identical(r1$algo.restarts.incrementFactor, 0.05);
   expect_identical(r1$algo.restarts, TRUE);
   expect_identical(r1$algo.is.hybrid, FALSE);
   expect_identical(r1$algo.fitness, "direct");
@@ -86,6 +123,7 @@ test_that("Test aitoa.algorithm.parameters", {
   r1 <- aitoa.algorithm.parameters.ea("ea_16+16@0d3_1swapR_sequence");
   r2 <- aitoa.algorithm.parameters("ea_16+16@0d3_1swapR_sequence");
   expect_identical(r1, r2);
+  expect_identical(r1$algo.name, "ea16_1swap_30");
   expect_identical(r1$algo.algorithm, "ea");
   expect_identical(r1$algo.representation, "default");
   expect_identical(r1$algo.operator.unary, "1swapR");

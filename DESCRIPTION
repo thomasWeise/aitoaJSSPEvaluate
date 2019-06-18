@@ -7,7 +7,8 @@ Maintainer: Dr. Thomas Weise <tweise@hfuu.edu.cn>
 Description: With this package, we evaluate the JSSP results.
 License: GPL-3
 Encoding: UTF-8
-Imports: stats (>= 3.5.2),
+Imports: plotteR (>= 0.8.13),
+         stats (>= 3.5.2),
          utils (>= 3.5.2)
 Suggests: devtools (>= 2.0.2),
           roxygen2 (>= 6.1.1),
@@ -16,14 +17,18 @@ Suggests: devtools (>= 2.0.2),
 Depends: R (>= 3.5.0)
 ByteCompile: true
 LazyData: true
+Remotes: github::thomasWeise/plotteR
 RoxygenNote: 6.1.1
 Collate: 
     'algorithm_parameters.R'
     'config.R'
-    'data.R'
     'utils.R'
     'setups.R'
+    'algorithm_parameters_frame.R'
+    'data.R'
     'instance_features.R'
     'load_log_file.R'
     'end_results.R'
     'end_results_stats.R'
+    'graphics.R'
+    'plot_schedules.R'

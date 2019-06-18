@@ -1,6 +1,9 @@
 # each algorithm setup method returns either NULL or a list of setup features
 
+.algo.name <- "algo.name";
+
 .algo.algorithm <- "algo.algorithm";
+.algo.algorithm.rs1 <- "1rs";
 .algo.algorithm.rs <- "rs";
 .algo.algorithm.hc <- "hc";
 .algo.algorithm.sa <- "sa";
@@ -21,8 +24,11 @@
 
 .algo.restarts <- "algo.restarts";
 .algo.restarts.strategy <- "algo.restarts.strategy";
-.algo.restarts.strategyHC2 <- "after.enumeration";
-.algo.restarts.parameter <- "algo.restarts.parameter";
+.algo.restarts.strategy.HC2 <- "after.enumeration";
+.algo.restarts.strategy.fe.based <- "FEbased";
+.algo.restarts.strategy.gen.based <- "genBased";
+.algo.restarts.iterations <- "algo.restarts.iterations";
+.algo.restarts.incrementFactor <- "algo.restarts.incrementFactor";
 
 .algo.temperature.schedule <- "algo.temperature.schedule";
 .algo.temperature.start <- "algo.temperature.start";
@@ -33,7 +39,7 @@
 .algo.binary.rate <- "algo.binary.rate";
 
 .algo.fitness <- "algo.fitness";
-#.algo.fitness.ffa <- "ffa";
+.algo.fitness.ffa <- "ffa";
 .algo.fitness.direct <- "direct";
 .algo.fitness.pruning <- "pruning";
 
@@ -42,6 +48,31 @@
 
 .algo.model <- "algo.model";
 .algo.max.tree.depth <- "algo.max.tree.depth";
+
+
+.algo.param.seq <- c(
+  .algo.name,
+  .algo.algorithm,
+  .algo.representation,
+  .algo.operator.unary,
+  .algo.restarts,
+  .algo.restarts.strategy,
+  .algo.restarts.iterations,
+  .algo.restarts.incrementFactor,
+  .algo.mu,
+  .algo.lambda,
+  .algo.fitness,
+  .algo.is.hybrid,
+  .algo.operator.binary,
+  .algo.binary.rate,
+  .algo.temperature.schedule,
+  .algo.temperature.start,
+  .algo.temperature.parameter,
+  .algo.hybrid.global.search,
+  .algo.model,
+  .algo.max.tree.depth
+);
+
 
 .make.list <- function(keys, ...) {
   r <- list(...);
@@ -102,20 +133,96 @@
 #' @export aitoa.algorithm.parameters.rs
 aitoa.algorithm.parameters.rs <- function(algoDir) {
   if(algoDir == "rs") {
-    return(.make.list(c(.algo.algorithm,
+    return(.make.list(c(.algo.name,
+                        .algo.algorithm,
                         .algo.representation,
+                        .algo.restarts,
+                        .algo.restarts.strategy,
+                        .algo.restarts.iterations,
+                        .algo.restarts.incrementFactor,
                         .algo.is.hybrid,
                         .algo.fitness,
                         .algo.mu,
                         .algo.lambda,
                         .algo.binary.rate),
+                      "rs",
                       .algo.algorithm.rs,
                       .algo.representation.default,
+                      TRUE,
+                      .algo.restarts.strategy.fe.based,
+                      1L,
+                      0,
+                      FALSE,
+                      .algo.fitness.direct,
+                      0L, 1L, 0));
+  }
+  if(algoDir == "1rs") {
+    return(.make.list(c(.algo.name,
+                        .algo.algorithm,
+                        .algo.representation,
+                        .algo.restarts,
+                        .algo.is.hybrid,
+                        .algo.fitness,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate),
+                      "1rs",
+                      .algo.algorithm.rs,
+                      .algo.representation.default,
+                      FALSE,
                       FALSE,
                       .algo.fitness.direct,
                       0L, 1L, 0));
   }
   return(NULL);
+}
+
+
+
+# parse hill climbing parameters to a short name
+.aitoa.algorithm.name.hc <- function(parameters) {
+  setup <- parameters[[.algo.algorithm]];
+  stopifnot(!is.null(setup), is.character(setup), nchar(setup) > 0L);
+
+  algo <- parameters[[.algo.algorithm]];
+  stopifnot(!is.null(algo), is.character(algo), nchar(algo) > 0L,
+            algo=="hc");
+
+  restart <- parameters[[.algo.restarts]];
+  stopifnot(!is.null(restart), is.logical(restart));
+
+  unary <- parameters[[.algo.operator.unary]];
+  stopifnot(!is.null(unary), is.character(unary), nchar(unary) > 0L);
+
+  if(endsWith(unary, "R")) {
+    s <- substring(unary, 1L, nchar(unary) - 1L);
+    if(nchar(s) > 0L) {
+      unary <- s;
+    }
+  }
+
+  if(restart) {
+    policy <- parameters[[.algo.restarts.strategy]];
+    stopifnot(!is.null(policy), is.character(policy), nchar(policy) > 0L);
+
+    if(policy == .algo.restarts.strategy.fe.based) {
+
+      fes <- parameters[[.algo.restarts.iterations]];
+      stopifnot(!is.null(fes));
+
+      inc <- parameters[[.algo.restarts.incrementFactor]];
+      stopifnot(!is.null(inc), is.numeric(inc), is.finite(inc), inc >= 0);
+
+      name <- paste0("hcr_", fes);
+      if(inc > 0) {
+        name <- paste0(name, "+", as.integer(round(100*inc)), "%");
+      }
+    }
+
+    return(paste0(name, "_", unary));
+  }
+
+  return(paste0("hc_", unary));
 }
 
 
@@ -133,7 +240,8 @@ aitoa.algorithm.parameters.hc <- function(algoDir) {
     stopifnot(length(s) == 1L);
     s <- trimws(s[[1L]]);
     if(length(s) == 2L) {
-      return(.make.list(c(.algo.algorithm,
+      res <- (.make.list(c(.algo.name,
+                           .algo.algorithm,
                           .algo.operator.unary,
                           .algo.restarts,
                           .algo.representation,
@@ -142,6 +250,7 @@ aitoa.algorithm.parameters.hc <- function(algoDir) {
                           .algo.mu,
                           .algo.lambda,
                           .algo.binary.rate),
+                         "",
                         .algo.algorithm.hc,
                         s[[2L]],
                         FALSE,
@@ -149,49 +258,63 @@ aitoa.algorithm.parameters.hc <- function(algoDir) {
                         FALSE,
                         .algo.fitness.direct,
                         1L, 1L, 0));
+    } else {
+      stopifnot(s[[2L]] == "rs");
+      if(length(s) == 5L) {
+        res <- (.make.list(c(.algo.name,
+                             .algo.algorithm,
+                            .algo.operator.unary,
+                            .algo.restarts,
+                            .algo.restarts.strategy,
+                            .algo.restarts.iterations,
+                            .algo.restarts.incrementFactor,
+                            .algo.representation,
+                            .algo.is.hybrid,
+                            .algo.fitness,
+                            .algo.mu,
+                            .algo.lambda,
+                            .algo.binary.rate),
+                           "",
+                          .algo.algorithm.hc,
+                          s[[5L]],
+                          TRUE,
+                          .algo.restarts.strategy.fe.based,
+                          .try.parse.double(s[[3L]]),
+                          .parse.double(s[[4L]]),
+                          .algo.representation.default,
+                          FALSE,
+                          .algo.fitness.direct,
+                          1L, 1L, 0));
+      } else {
+        stopifnot(length(s) == 4L);
+        stop(algoDir);
+        # return(.make.list(c(.algo.algorithm,
+        #                     .algo.operator.unary,
+        #                     .algo.restarts,
+        #                     .algo.restarts.strategy,
+        #                     .algo.restarts.iterations,
+        #                     .algo.restarts.incrementFactor,
+        #                     .algo.representation,
+        #                     .algo.is.hybrid,
+        #                     .algo.fitness,
+        #                     .algo.mu,
+        #                     .algo.lambda,
+        #                     .algo.binary.rate),
+        #                   .algo.algorithm.hc,
+        #                   s[[4L]],
+        #                   TRUE,
+        #                   .algo.restarts.strategy.fixedFEs,
+        #                   .try.parse.double(s[[3L]]),
+        #                   .algo.representation.default,
+        #                   FALSE,
+        #                   .algo.fitness.direct,
+        #                   1L, 1L, 0));
+      }
     }
-    stopifnot(s[[2L]] == "rs");
-    if(length(s) == 5L) {
-      return(.make.list(c(.algo.algorithm,
-                          .algo.operator.unary,
-                          .algo.restarts,
-                          .algo.restarts.strategy,
-                          .algo.restarts.parameter,
-                          .algo.representation,
-                          .algo.is.hybrid,
-                          .algo.fitness,
-                          .algo.mu,
-                          .algo.lambda,
-                          .algo.binary.rate),
-                        .algo.algorithm.hc,
-                        s[[5L]],
-                        TRUE,
-                        .try.parse.double(s[[3L]]),
-                        .parse.double(s[[4L]]),
-                        .algo.representation.default,
-                        FALSE,
-                        .algo.fitness.direct,
-                        1L, 1L, 0));
-    }
-    stopifnot(length(s) == 4L);
-    return(.make.list(c(.algo.algorithm,
-                        .algo.operator.unary,
-                        .algo.restarts,
-                        .algo.restarts.strategy,
-                        .algo.representation,
-                        .algo.is.hybrid,
-                        .algo.fitness,
-                        .algo.mu,
-                        .algo.lambda,
-                        .algo.binary.rate),
-                      .algo.algorithm.hc,
-                      s[[4L]],
-                      TRUE,
-                      .try.parse.double(s[[3L]]),
-                      .algo.representation.default,
-                      FALSE,
-                      .algo.fitness.direct,
-                      1L, 1L, 0));
+
+    res[[1L]] <- .aitoa.algorithm.name.hc(res);
+    res <- force(res);
+    return(res);
   }
   return(NULL);
 }
@@ -242,6 +365,82 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
 }
 
 
+
+# compute the EA name
+.aitoa.algorithm.name.ea <- function(parameters) {
+  mu <- parameters[[.algo.mu]];
+  stopifnot(!is.null(mu), is.integer(mu), mu > 0L);
+
+  lambda <- parameters[[.algo.lambda]];
+  stopifnot(!is.null(lambda), is.integer(lambda), lambda > 0L);
+
+  unary <- parameters[[.algo.operator.unary]];
+  stopifnot(!is.null(unary), is.character(unary), nchar(unary) > 0L);
+
+  cr <- parameters[[.algo.binary.rate]];
+  stopifnot(!is.null(cr), is.numeric(cr), cr >= 0, cr <= 1);
+
+  res <- "ea";
+  fitness <- parameters[[.algo.fitness]];
+  if(!is.null(fitness)) {
+    stopifnot(is.character(fitness));
+    if(fitness == .algo.fitness.pruning) {
+      res <- "pea";
+    } else {
+      if(fitness == .algo.fitness.ffa) {
+        res <- "fea";
+      }
+    }
+  }
+
+  restart <- parameters[[.algo.restarts]];
+  stopifnot(!is.na(restart), !is.null(restart), is.logical(restart));
+  if(restart) {
+    res <- paste0(res, "r");
+  }
+
+  res <- paste0(res, mu);
+  if(lambda != mu) {
+    res <- paste0(res, "+", lambda);
+  }
+
+  if(restart) {
+    policy <- parameters[[.algo.restarts.strategy]];
+    stopifnot(!is.null(policy), is.character(policy), nchar(policy) > 0L);
+
+    if(policy == .algo.restarts.strategy.gen.based) {
+
+      fes <- parameters[[.algo.restarts.iterations]];
+      stopifnot(!is.null(fes));
+
+      inc <- parameters[[.algo.restarts.incrementFactor]];
+      stopifnot(!is.null(inc), is.numeric(inc), is.finite(inc), inc >= 0);
+
+      res <- paste0(res, "_", fes);
+      if(inc > 0) {
+        name <- paste0(res, "+", as.integer(round(100*inc)), "%");
+      }
+    }
+  }
+
+  if(endsWith(unary, "R")) {
+    s <- substring(unary, 1L, nchar(unary) - 1L);
+    if(nchar(s) > 0L) {
+      unary <- s;
+    }
+  }
+
+  res <- paste0(res, "_", unary);
+
+  if(cr > 0) {
+    res <- paste0(res, "_", round(cr*100));
+  }
+
+  return(res);
+}
+
+
+
 #' @title Parse the Parameters of an Evolutionary Algorithm
 #' @description Check whether an algorithm directory is an Evolutionary
 #'   Algorithm and return the corresponding parameters if yes or \code{NULL} if
@@ -266,10 +465,25 @@ aitoa.algorithm.parameters.ea <- function(algoDir) {
   stopifnot(length(s) == 1L);
   s <- trimws(s[[1L]]);
 
+  algo.restarts <- FALSE;
+  algo.restarts.strategy <- NA_character_;
+  algo.restarts.iterations <- NA_integer_;
+  algo.restarts.incrementFactor <- 0;
+  if(s[[2L]] == "rs") {
+    algo.restarts <- TRUE;
+    algo.restarts.strategy <- .algo.restarts.strategy.gen.based;
+    algo.restarts.iterations <- .parse.int(s[[length(s) - 2L]]);
+    stopifnot(.algo.restarts.iterations > 0L);
+    s <- s[-(length(s) - 2L)];
+    s <- s[-2L];
+    s <- force(s);
+  }
+
   if(length(s) == 5L) {
     stopifnot(!is.pruning);
     ofs <- 3L;
     fitness <- s[[2L]];
+    stopifnot(fitness == .algo.fitness.ffa);
   } else {
     stopifnot(length(s) == 4L);
     ofs <- 2L;
@@ -296,26 +510,63 @@ aitoa.algorithm.parameters.ea <- function(algoDir) {
   cr <- .parse.double(mu.lambda.cr[[2L]]);
   stopifnot(cr >= 0, cr <= 1);
 
-  return(.make.list(c(.algo.algorithm,
-                      .algo.operator.unary,
-                      .algo.operator.binary,
-                      .algo.restarts,
-                      .algo.representation,
-                      .algo.mu,
-                      .algo.lambda,
-                      .algo.binary.rate,
-                      .algo.fitness,
-                      .algo.is.hybrid),
-                    .algo.algorithm.ea,
-                    s[[ofs + 1L]],
-                    s[[ofs + 2L]],
-                    FALSE,
-                    .algo.representation.default,
-                    mu,
-                    lambda,
-                    cr,
-                    fitness,
-                    FALSE));
+  if(algo.restarts) {
+    res <- (.make.list(c(.algo.name,
+                         .algo.algorithm,
+                         .algo.operator.unary,
+                         .algo.operator.binary,
+                         .algo.restarts,
+                         .algo.restarts.strategy,
+                         .algo.restarts.iterations,
+                         .algo.restarts.incrementFactor,
+                         .algo.representation,
+                         .algo.mu,
+                         .algo.lambda,
+                         .algo.binary.rate,
+                         .algo.fitness,
+                         .algo.is.hybrid),
+                       "",
+                       .algo.algorithm.ea,
+                       s[[ofs + 1L]],
+                       s[[ofs + 2L]],
+                       TRUE,
+                       algo.restarts.strategy,
+                       algo.restarts.iterations,
+                       algo.restarts.incrementFactor,
+                       .algo.representation.default,
+                       mu,
+                       lambda,
+                       cr,
+                       fitness,
+                       FALSE));
+  } else {
+    res <- (.make.list(c(.algo.name,
+                        .algo.algorithm,
+                        .algo.operator.unary,
+                        .algo.operator.binary,
+                        .algo.restarts,
+                        .algo.representation,
+                        .algo.mu,
+                        .algo.lambda,
+                        .algo.binary.rate,
+                        .algo.fitness,
+                        .algo.is.hybrid),
+                       "",
+                      .algo.algorithm.ea,
+                      s[[ofs + 1L]],
+                      s[[ofs + 2L]],
+                      FALSE,
+                      .algo.representation.default,
+                      mu,
+                      lambda,
+                      cr,
+                      fitness,
+                      FALSE));
+  }
+
+  res[[1L]] <- .aitoa.algorithm.name.ea(res);
+
+  return(res);
 }
 
 
@@ -554,7 +805,7 @@ aitoa.algorithm.parameters.hc2 <- function(algoDir) {
                       .algo.algorithm.hc2,
                       s[[3L]],
                       TRUE,
-                      .algo.restarts.strategyHC2,
+                      .algo.restarts.strategy.HC2,
                       .algo.representation.default,
                       FALSE,
                       .algo.fitness.direct,
@@ -630,7 +881,6 @@ aitoa.algorithm.parameters.gp <- function(algoDir) {
   result[[.algo.max.tree.depth]] <- depth;
   return(result);
 }
-
 
 .algo.setup.functions <- unlist(c(.algo.setup.functions.inner,
                                    aitoa.algorithm.parameters.gp));
