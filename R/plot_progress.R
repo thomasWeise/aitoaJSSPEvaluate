@@ -22,7 +22,22 @@
                                 files.file,
                                 colors,
                                 ...,
-                                max.t=(3L*60L*1000L)) {
+                                max.t) {
+  stopifnot(is.integer(max.t),
+            max.t > 0L,
+            is.finite(max.t),
+            length(names.setup) > 0L,
+            all(is.character(names.setup)),
+            length(names.name) == length(names.setup),
+            all(is.character(names.name)),
+            length(files.setup) > 0L,
+            all(is.character(files.setup)),
+            length(files.instance) == length(files.setup),
+            all(is.character(files.instance)),
+            length(files.file) == length(files.instance),
+            all(is.character(files.file)),
+            length(colors) > 0L,
+            all(is.character(colors)));
   config$logger("now processing instance '", instance, "': loading data.");
   data <- lapply(names.setup,
                  function(setup) {
@@ -182,7 +197,10 @@
 #' @export aitoa.plot.progress
 aitoa.plot.progress <- function(config, setups, ..., name=NULL,
                                 max.t=(3L*60L*1000L)) {
-  stopifnot(length(setups) > 0L);
+  stopifnot(length(setups) > 0L,
+            is.integer(max.t),
+            is.finite(max.t),
+            max.t > 0L);
   setups <- unique(as.character(setups));
   stopifnot(length(setups) > 0L,
             all(is.character(setups)),
