@@ -31,7 +31,7 @@ aitoa.end.results.statistics.table <- function(setups, name=NULL) {
   rm("pick");
 
   found <- vapply(setups, function(setup) {
-    sel <- names.setup == setup;
+    sel <- names.name == setup;
     stopifnot(sum(sel) == 1L);
     sel <- which(sel);
     stopifnot(length(sel) == 1L);
@@ -65,7 +65,7 @@ aitoa.end.results.statistics.table <- function(setups, name=NULL) {
 
     frame$zz <- integer(nrow(frame));
     for(i in seq_len(nrow(frame))) {
-      frame$zz[i] <- which(as.character(frame$algorithm[[i]])==setups)[[1L]];
+      frame$zz[i] <- which(as.character(frame$algorithm[[i]]) == names.setup)[[1L]];
     }
     stopifnot(nrow(frame) >= 1L);
 
