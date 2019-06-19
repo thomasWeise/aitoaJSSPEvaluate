@@ -25,3 +25,10 @@
   }
   return(a);
 }
+
+# make a graphics directory
+.dir.plots <- function(..., config) {
+  dir <- .dir.eval("plots", ..., config=config);
+  stopifnot(dir.exists(dir));
+  return(dir);
+}

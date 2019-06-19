@@ -1,6 +1,7 @@
 
 # plot a single gantt chart
 #' @include config.R
+#' @importFrom graphics legend
 .plot.gantt <- function(instance, config, path, value, m) {
   path <- file.path(config$dir.results, path);
   stopifnot(file.exists(path), file.size(path) > 100L);
@@ -57,6 +58,7 @@
 #' @include utils.R
 #' @include graphics.R
 #' @importFrom plotteR plots.arrange
+#' @importFrom graphics par
 #' @export aitoa.plot.gantt.charts
 aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
   config$logger("plotting Gantt charts: first loading data");
@@ -121,11 +123,8 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
            value=unname(unlist(frame.setup$best.f.min)))
     );
 
-
-
     for(plot.task in plot.tasks) {
-
-      .dir <- .dir.eval("graphics", "gantt", plot.task$prefix, config=config);
+      .dir <- .dir.plots("gantt", plot.task$prefix, config=config);
 
       file <- file.path(.dir, .graphics.name(paste("jssp_gantt", name,
                                 plot.task$prefix, sep="_", collapse="_")));

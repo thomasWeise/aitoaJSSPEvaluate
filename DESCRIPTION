@@ -7,7 +7,9 @@ Maintainer: Dr. Thomas Weise <tweise@hfuu.edu.cn>
 Description: With this package, we evaluate the JSSP results.
 License: GPL-3
 Encoding: UTF-8
-Imports: plotteR (>= 0.8.13),
+Imports: graphics (>= 3.5.2),
+         grDevices (>= 3.5.2),
+         plotteR (>= 0.8.13),
          stats (>= 3.5.2),
          utils (>= 3.5.2)
 Suggests: devtools (>= 2.0.2),
@@ -31,4 +33,5 @@ Collate:
     'end_results.R'
     'end_results_stats.R'
     'graphics.R'
+    'plot_progress.R'
     'plot_schedules.R'
