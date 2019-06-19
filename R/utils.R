@@ -47,3 +47,10 @@
   stopifnot(dir.exists(dir));
   return(dir);
 }
+
+# make a graphics directory
+.dir.tables <- function(..., config) {
+  dir <- .dir.eval("tables", ..., config=config);
+  stopifnot(dir.exists(dir));
+  return(dir);
+}

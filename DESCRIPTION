@@ -32,6 +32,7 @@ Collate:
     'load_log_file.R'
     'end_results.R'
     'end_results_stats.R'
+    'end_results_stats_table.R'
     'graphics.R'
     'plot_progress.R'
     'plot_schedules.R'
