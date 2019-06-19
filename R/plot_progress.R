@@ -1,4 +1,15 @@
-
+#' @include utils.R
+.post.process.plot.progress <- function(file) {
+  stopifnot(file.exists(file));
+  text <- readLines(con=file);
+  stopifnot(length(text) > 0L);
+  text <- paste(trimws(text), sep="", collapse="");
+  text <- .internal.gsub('g clip-path=\\".*?\\" clip-rule=\\"nonzero\\"', "g", text);
+  text <- .internal.gsub('<clipPath.*?</clipPath>', "", text);
+  text <- .internal.gsub('</g>\\s*<g>', "", text);
+  writeLines(text, con=file);
+  return(file);
+}
 
 #' @include utils.R
 #' @include load_log_file.R
@@ -25,25 +36,66 @@
                      t <- r$t;
                      stopifnot(all(is.integer(t)), all(t >= 0L),
                                length(t) >= 1L);
-                     if(length(t) > 1L) {
+                     l <- length(t);
+                     if(l > 1L) {
                        stopifnot(length(unique(t[-1L])) == (length(t)-1L));
                      }
                      f <- r$f;
                      stopifnot(all(is.integer(f)), all(f > 0L));
+                     if((l > 1L) && (t[[l]] != max.t)) {
+                       if(f[[l - 1L]] == f[[l]]) {
+                         t[[l]] <- max.t;
+                       }
+                     }
                      r <- list(t=t, f=f);
                      r <- force(r);
                      return(r);
                    });
-                   stopifnot(length(res) == length(files),
+
+                   l <- length(res);
+                   stopifnot(l == length(files),
+                             l >= config$min.runs,
                              all(vapply(res, length, 0L) == 2L));
+                   res <- unique(res);
+                   l2 <- length(res);
+                   stopifnot(l2 <= l, l2 > 0L);
+                   if(l2 < l) {
+                     config$logger("reduced line count for setup '", setup,
+                                   "' on instance '", instance, " from ", l,
+                                   " to ", l2);
+                   }
                    return(res);
                  });
 
-  config$logger("done loading data.");
+  config$logger("done loading data, now trying to reduce data.");
+
+  for(i in seq.int(1L, length(data)-1L)) {
+    dl <- data[[i]];
+    need <- !vapply(dl,
+                  function(d1) {
+                    any(vapply(seq.int(i+1L, length(data)),
+                           function(j) {
+                             any(vapply(data[[j]],
+                                        function(d2) identical(d1, d2),
+                                        FALSE))
+                           }, FALSE))
+                  }, FALSE);
+    l1 <- length(dl);
+    l2 <- sum(need);
+    if(l2 < l1) {
+      config$logger("reduced line count due to overlap from ", l1, " to ", l2);
+      dl <- dl[need];
+      dl <- force(dl);
+      data[[i]] <- dl;
+      data[[i]] <- force(data[[i]]);
+    }
+  }
+
+  config$logger("finished trying to reduce data.");
 
   f.range <- range(unlist(lapply(data,
                                  function(d) {
-                                   stopifnot(length(d) >= config$min.runs);
+#                                  stopifnot(length(d) >= config$min.runs);
                                    lapply(d,
                                           function(dd) {
                                             stopifnot(length(dd$f) >= 1L);
@@ -228,7 +280,7 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
              mar[1L] <- 0.85 * mar[1L];
              mar[4L] <- 0.15 * mar[4L];
              p1 <- par(cex=0.78, mar=mar);
-             p2 <- par(mfrow=c(length(instances), 1L));#plots.arrange(length(instances), portrait = FALSE));
+             p2 <- par(mfrow=c(length(instances), 1L));
              for(instance in instances) {
                .plot.progress.inst(config,
                                    instance,
@@ -246,6 +298,9 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
            });
 
   stopifnot(file.exists(res));
-  config$logger("done plotting to file '", res, "'.");
+  config$logger("done plotting to file '", res, "', now post-processing.");
+  res <- .post.process.plot.progress(res);
+  stopifnot(file.exists(res));
+  config$logger("done post-processing file '", res, "'.");
   return(res);
 }

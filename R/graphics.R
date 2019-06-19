@@ -1,21 +1,16 @@
 # obtain a graphics name
+#' @include utils.R
 .graphics.name <- function(base) {
   stopifnot(!is.null(base), !is.na(base));
   base <- as.character(base);
   stopifnot(nchar(base) > 0L);
 
-  base <- gsub(" ", "_", base, fixed=TRUE);
-  base <- gsub(".", "_", base, fixed=TRUE);
-  base <- gsub("%", "_", base, fixed=TRUE);
+  base <- .internal.gsub(" ", "_", base, fixed=TRUE);
+  base <- .internal.gsub(".", "_", base, fixed=TRUE);
+  base <- .internal.gsub("%", "_", base, fixed=TRUE);
+  base <- .internal.gsub("__", "_", base, fixed=TRUE);
   l2 <- nchar(base);
   stopifnot(l2 > 0L);
-  repeat {
-    base <- gsub("__", "_", base, fixed=TRUE);
-    l1 <- l2;
-    l2 <- nchar(base);
-    stopifnot(l2 > 0L);
-    if(l2 >= l1) { break; }
-  }
 
   base <- paste0(base, ".svg");
   stopifnot(nchar(base) == (l2 + 4L));
@@ -31,7 +26,7 @@
     config$logger("file '", path, "' does not exist - so we need to plot to it.");
 
     svg(file=path, width=width, height=height, antialias="subpixel");
-    pp <- par(ljoin=0);
+    pp <- par(ljoin=0L);
     eval(expr);
     par(pp);
     dev.off();
