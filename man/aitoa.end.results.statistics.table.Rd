@@ -4,9 +4,11 @@
 \alias{aitoa.end.results.statistics.table}
 \title{Print an End Result Statistics Table}
 \usage{
-aitoa.end.results.statistics.table(setups, name = NULL)
+aitoa.end.results.statistics.table(config, setups, name = NULL)
 }
 \arguments{
+\item{config}{the configuration object}
+
 \item{setups}{the list of setups which should be analyzed}
 
 \item{name}{the (optional) file name}

@@ -181,9 +181,6 @@ aitoa.algorithm.parameters.rs <- function(algoDir) {
 
 # parse hill climbing parameters to a short name
 .aitoa.algorithm.name.hc <- function(parameters) {
-  setup <- parameters[[.algo.algorithm]];
-  stopifnot(!is.null(setup), is.character(setup), nchar(setup) > 0L);
-
   algo <- parameters[[.algo.algorithm]];
   stopifnot(!is.null(algo), is.character(algo), nchar(algo) > 0L,
             algo=="hc");
@@ -320,6 +317,82 @@ aitoa.algorithm.parameters.hc <- function(algoDir) {
 }
 
 
+# parse hill climbing parameters to a short name
+.aitoa.algorithm.name.sa <- function(parameters) {
+  algo <- parameters[[.algo.algorithm]];
+  stopifnot(!is.null(algo), is.character(algo), nchar(algo) > 0L,
+            algo=="sa");
+
+  unary <- parameters[[.algo.operator.unary]];
+  stopifnot(!is.null(unary), is.character(unary), nchar(unary) > 0L);
+
+  if(endsWith(unary, "R")) {
+    s <- substring(unary, 1L, nchar(unary) - 1L);
+    if(nchar(s) > 0L) {
+      unary <- s;
+    }
+  }
+
+  sched <- parameters[[.algo.temperature.schedule]];
+  stopifnot(!is.null(sched), is.character(sched), nchar(sched) > 0L);
+
+  ts <- parameters[[.algo.temperature.start]];
+  stopifnot(is.numeric(ts), is.finite(ts), ts>0);
+  if((ts >= -.Machine$integer.max) && (ts <= .Machine$integer.max)) {
+    ts.i <- as.integer(ts);
+    if(is.integer(ts.i) && is.finite(ts.i) && (ts.i == ts)) {
+      ts <- ts.i;
+    }
+  }
+  ts <- as.character(ts);
+  stopifnot(nchar(ts) > 0L);
+
+  param <- parameters[[.algo.temperature.parameter]];
+  stopifnot(is.numeric(param), is.finite(param), param>0);
+  if((param >= -.Machine$integer.max) && (param <= .Machine$integer.max)) {
+    param.i <- as.integer(param);
+    if(is.integer(param.i) && is.finite(param.i) && (param.i == param)) {
+      param <- param.i;
+    }
+  }
+
+  if(param == 1L) {
+    if(sched == "log") {
+      return(paste0("sa_l_", ts, "_", unary));
+    }
+    if(sched == "exp") {
+      return(paste0("hc_", unary));
+    }
+  }
+  if(param == 0L) {
+    return(paste0("sa_", ts, "_", unary));
+  }
+
+  if((sched=="exp") || (sched=="log")) {
+    sched <- substr(sched, 1L, 1L);
+    stopifnot(nchar(sched) == 1L);
+  }
+
+  param <- as.character(param);
+  stopifnot(nchar(param) > 0L);
+  param <- .internal.gsub("e+0", "e+", param, fixed=TRUE);
+  stopifnot(nchar(param) > 0L);
+  param <- .internal.gsub("e-0", "e-", param, fixed=TRUE);
+  stopifnot(nchar(param) > 0L);
+  param <- .internal.gsub("e+", "e", param, fixed=TRUE);
+  stopifnot(nchar(param) > 0L);
+  if(endsWith(param, "e")) {
+    param <- substr(param, 1L, nchar(param) - 1L);
+  }
+  if(endsWith(param, "e-")) {
+    param <- substr(param, 1L, nchar(param) - 2L);
+  }
+  stopifnot(nchar(param) > 0L);
+
+  return(paste0("sa_", sched, "_", ts, "_", param, "_", unary));
+}
+
+
 #' @title Parse the Parameters of a Simulated Annealing Algorithm
 #' @description Check whether an algorithm directory is a Simulated Annealing
 #'   algorithm and return the corresponding parameters if yes or \code{NULL} if
@@ -338,7 +411,8 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
     stopifnot(ts > 0);
     eps <- .parse.double(s[[4L]]);
     stopifnot(eps >= 0);
-    return(.make.list(c(.algo.algorithm,
+    res <- (.make.list(c(.algo.name,
+                        .algo.algorithm,
                         .algo.operator.unary,
                         .algo.restarts,
                         .algo.representation,
@@ -350,6 +424,7 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
                         .algo.mu,
                         .algo.lambda,
                         .algo.binary.rate),
+                      "",
                       .algo.algorithm.sa,
                       s[[5L]],
                       FALSE,
@@ -360,6 +435,10 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
                       FALSE,
                       .algo.fitness.direct,
                       1L, 1L, 0));
+    res <- force(res);
+    res[[1L]] <- .aitoa.algorithm.name.sa(res);
+    res <- force(res);
+    return(res);
   }
   return(NULL);
 }
@@ -418,7 +497,7 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
 
       res <- paste0(res, "_", fes);
       if(inc > 0) {
-        name <- paste0(res, "+", as.integer(round(100*inc)), "%");
+        res <- paste0(res, "+", as.integer(round(100*inc)), "%");
       }
     }
   }
@@ -570,6 +649,46 @@ aitoa.algorithm.parameters.ea <- function(algoDir) {
 }
 
 
+# compute the MA name
+.aitoa.algorithm.name.ma <- function(parameters) {
+  mu <- parameters[[.algo.mu]];
+  stopifnot(!is.null(mu), is.integer(mu), mu > 0L);
+
+  lambda <- parameters[[.algo.lambda]];
+  stopifnot(!is.null(lambda), is.integer(lambda), lambda > 0L);
+
+  unary <- parameters[[.algo.operator.unary]];
+  stopifnot(!is.null(unary), is.character(unary), nchar(unary) > 0L);
+
+  res <- "ma";
+  fitness <- parameters[[.algo.fitness]];
+  if(!is.null(fitness)) {
+    stopifnot(is.character(fitness));
+    if(fitness == .algo.fitness.pruning) {
+      res <- "pma";
+    } else {
+      if(fitness == .algo.fitness.ffa) {
+        res <- "fma";
+      }
+    }
+  }
+
+  restart <- parameters[[.algo.restarts]];
+  stopifnot(!is.na(restart), !is.null(restart), is.logical(restart));
+  if(restart) {
+    res <- paste0(res, "r");
+  }
+
+  res <- paste0(res, mu);
+  if(lambda != mu) {
+    res <- paste0(res, "+", lambda);
+  }
+
+  res <- paste0(res, "_", unary);
+
+  return(res);
+}
+
 
 #' @title Parse the Parameters of a Memetic Algorithm
 #' @description Check whether an algorithm directory is a Memetic Algorithm and
@@ -618,7 +737,8 @@ aitoa.algorithm.parameters.ma <- function(algoDir) {
   lambda <- .parse.int(mu.lambda[[2L]]);
   stopifnot(lambda > 0L);
 
-  return(.make.list(c(.algo.algorithm,
+  res <- (.make.list(c(.algo.name,
+                       .algo.algorithm,
                       .algo.operator.unary,
                       .algo.operator.binary,
                       .algo.restarts,
@@ -629,6 +749,7 @@ aitoa.algorithm.parameters.ma <- function(algoDir) {
                       .algo.fitness,
                       .algo.is.hybrid,
                       .algo.hybrid.global.search),
+                     "",
                     .algo.algorithm.ma,
                     s[[ofs + 1L]],
                     s[[ofs + 2L]],
@@ -640,6 +761,10 @@ aitoa.algorithm.parameters.ma <- function(algoDir) {
                     fitness,
                     TRUE,
                     .algo.algorithm.ea));
+
+  res[[1L]] <- .aitoa.algorithm.name.ma(res);
+  res <- force(res);
+  return(res);
 }
 
 
@@ -771,7 +896,8 @@ aitoa.algorithm.parameters.hc2 <- function(algoDir) {
     stopifnot(length(s) == 1L);
     s <- trimws(s[[1L]]);
     if(length(s) == 2L) {
-      return(.make.list(c(.algo.algorithm,
+      return(.make.list(c(.algo.name,
+                          .algo.algorithm,
                           .algo.operator.unary,
                           .algo.restarts,
                           .algo.representation,
@@ -780,6 +906,7 @@ aitoa.algorithm.parameters.hc2 <- function(algoDir) {
                           .algo.mu,
                           .algo.lambda,
                           .algo.binary.rate),
+                        paste0("hc2_", s[[2L]]),
                         .algo.algorithm.hc2,
                         s[[2L]],
                         FALSE,
@@ -792,7 +919,8 @@ aitoa.algorithm.parameters.hc2 <- function(algoDir) {
     }
     stopifnot(length(s) == 3L,
               s[[2L]] == "rs");
-    return(.make.list(c(.algo.algorithm,
+    return(.make.list(c(.algo.name,
+                        .algo.algorithm,
                         .algo.operator.unary,
                         .algo.restarts,
                         .algo.restarts.strategy,
@@ -802,6 +930,7 @@ aitoa.algorithm.parameters.hc2 <- function(algoDir) {
                         .algo.mu,
                         .algo.lambda,
                         .algo.binary.rate),
+                      paste0("hc2r_", s[[3L]]),
                       .algo.algorithm.hc2,
                       s[[3L]],
                       TRUE,

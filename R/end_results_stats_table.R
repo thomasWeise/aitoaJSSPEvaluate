@@ -1,5 +1,6 @@
 #' @title Print an End Result Statistics Table
 #' @description  Print the end result statistics table in markdown format.
+#' @param config the configuration object
 #' @param setups the list of setups which should be analyzed
 #' @param name the (optional) file name
 #' @return the path to the file
@@ -8,7 +9,7 @@
 #' @include end_results_stats.R
 #' @include instance_features.R
 #' @include algorithm_parameters_frame.R
-aitoa.end.results.statistics.table <- function(setups, name=NULL) {
+aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
   stopifnot(length(setups) > 0L);
   setups <- unique(as.character(setups));
   stopifnot(length(setups) > 0L,
