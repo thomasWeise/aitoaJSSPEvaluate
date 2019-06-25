@@ -13,6 +13,7 @@
 #' @param dir.evaluation the directory where the evaluation data should be
 #'   written to
 #' @param logger the logger function
+#' @param graphics.ext the graphics extension
 #' @param min.instances the minimum number of instances
 #' @param min.runs the minimum number of runs per instance and algorithm
 #' @param instance.features a function which can be called and will return a
@@ -25,11 +26,15 @@ aitoa.config <- function(dir.results="./results",
                          logger=.logger,
                          min.instances=4L,
                          min.runs=101L,
+                         graphics.ext="svg",
                          instance.features=function() get(data("jsspInstances"))) {
 
   stopifnot(is.character(dir.results),
             is.character(dir.evaluation),
             is.function(logger),
+            is.character(graphics.ext),
+            nchar(graphics.ext) == 3L,
+            graphics.ext %in% c("pdf", "eps", "svg"),
             is.integer(min.instances),
             is.integer(min.runs),
             min.instances > 0L,
@@ -46,7 +51,8 @@ aitoa.config <- function(dir.results="./results",
 
   config <- list(dir.results = dir.results,
                  dir.evaluation = dir.evaluation,
-                 logger=logger,
+                 logger = logger,
+                 graphics.ext = graphics.ext,
                  min.instances=min.instances,
                  min.runs=min.runs,
                  instance.features=instance.features);

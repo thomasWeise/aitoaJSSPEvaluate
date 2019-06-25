@@ -274,11 +274,12 @@ size.mat <- matrix(size, nrow=m.count, ncol=n.count);
 library("plot3D");
 
 dir <- dirname(sys.frame(1)$ofile);
+source(file.path(dir, "..", "R", "utils.R"));
 source(file.path(dir, "..", "R", "graphics.R"));
 
-config <- list(logger=function(...) { });
+config <- list(logger=function(...) { }, graphics.ext="svg");
 
-.graphic(config, file.path(dir, "jssp_searchspace_size_scale.svg"), 6, 6, {
+.graphic(config, file.path(dir, .graphics.name(config, "jssp_searchspace_size_scale")), 6, 6, {
   persp3D(x=m.mat,
           y=n.mat,
           z=log10(size.mat),

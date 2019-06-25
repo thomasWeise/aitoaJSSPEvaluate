@@ -1,6 +1,6 @@
 # obtain a graphics name
 #' @include utils.R
-.graphics.name <- function(base) {
+.graphics.name <- function(config, base) {
   stopifnot(!is.null(base), !is.na(base));
   base <- as.character(base);
   stopifnot(nchar(base) > 0L);
@@ -12,7 +12,7 @@
   l2 <- nchar(base);
   stopifnot(l2 > 0L);
 
-  base <- paste0(base, ".svg");
+  base <- paste0(base, ".", config$graphics.ext);
   stopifnot(nchar(base) == (l2 + 4L));
   return(base);
 }
@@ -25,7 +25,21 @@
   if(!file.exists(path)) {
     config$logger("file '", path, "' does not exist - so we need to plot to it.");
 
-    svg(file=path, width=width, height=height, antialias="subpixel");
+    if(config$graphics.ext == "svg") {
+      f <- svg;
+    } else {
+      if(config$graphics.ext == "eps") {
+        f <- cairo_ps;
+      }  else {
+        if(config$graphics.ext == "pdf") {
+          f <- cairo_pdf;
+        } else {
+          stop(paste0("illegal graphics extension: ", config$graphics.ext));
+        }
+      }
+    }
+
+    f(file=path, width=width, height=height, antialias="subpixel");
     pp <- par(ljoin=0L);
     eval(expr);
     par(pp);

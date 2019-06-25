@@ -126,7 +126,7 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
     for(plot.task in plot.tasks) {
       .dir <- .dir.plots("gantt", plot.task$prefix, config=config);
 
-      file <- file.path(.dir, .graphics.name(paste("jssp_gantt", name,
+      file <- file.path(.dir, .graphics.name(config, paste("jssp_gantt", name,
                                 plot.task$prefix, sep="_", collapse="_")));
       index <- index + 1L;
       paths[[index]] <- .graphic(config=config,

@@ -284,7 +284,7 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
   stopifnot(nchar(name) > 0L);
 
   file <- file.path(.dir.plots("progress", config=config),
-                    .graphics.name(name));
+                    .graphics.name(config, name));
 
   colors <- colors.distinct(n=length(setups));
 
