@@ -5,7 +5,7 @@
 \title{Plot the Progress over Time for a Set of Algorithms on all Instances}
 \usage{
 aitoa.plot.progress(config, setups, ..., name = NULL, max.t = (3L * 60L
-  * 1000L))
+  * 1000L), plot.single = FALSE)
 }
 \arguments{
 \item{config}{the configuration}
@@ -18,9 +18,13 @@ aitoa.plot.progress(config, setups, ..., name = NULL, max.t = (3L * 60L
 
 \item{max.t}{the maximum time index (omit for 3 minutes, as in the AITOA
 book)}
+
+\item{plot.single}{should the diagrams be plotted separately?}
 }
 \value{
-the fully-qualified path to the file
+the fully-qualified path to the file (in case of
+  \code{plot.single==FALSE}) or a vector with the paths to all generated
+  files
 }
 \description{
 Plot the progress over time for a set of algorithms on all

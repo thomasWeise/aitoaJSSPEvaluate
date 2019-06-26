@@ -277,7 +277,13 @@ dir <- dirname(sys.frame(1)$ofile);
 source(file.path(dir, "..", "R", "utils.R"));
 source(file.path(dir, "..", "R", "graphics.R"));
 
-config <- list(logger=function(...) { }, graphics.ext="svg");
+if(exists("config")) {
+  .old.config <- config;
+  config$graphics.ext <- "svg";
+} else {
+  config <- list(logger=function(...) { }, graphics.ext="svg");
+  .old.config <- NULL;
+}
 
 .graphic(config, file.path(dir, .graphics.name(config, "jssp_searchspace_size_scale")), 6, 6, {
   persp3D(x=m.mat,
@@ -295,3 +301,10 @@ config <- list(logger=function(...) { }, graphics.ext="svg");
           log="z");
 });
 
+if(is.null(.old.config)) {
+  rm("config");
+} else {
+  config <- .old.config;
+}
+
+rm(".old.config");

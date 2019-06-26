@@ -82,31 +82,33 @@
                    return(res);
                  });
 
-  config$logger("done loading data, now trying to reduce data.");
+  if(length(data) > 1L) {
+    config$logger("done loading data, now trying to reduce data.");
 
-  for(i in seq.int(1L, length(data)-1L)) {
-    dl <- data[[i]];
-    need <- !vapply(dl,
-                  function(d1) {
-                    any(vapply(seq.int(i+1L, length(data)),
-                           function(j) {
-                             any(vapply(data[[j]],
-                                        function(d2) identical(d1, d2),
-                                        FALSE))
-                           }, FALSE))
-                  }, FALSE);
-    l1 <- length(dl);
-    l2 <- sum(need);
-    if(l2 < l1) {
-      config$logger("reduced line count due to overlap from ", l1, " to ", l2);
-      dl <- dl[need];
-      dl <- force(dl);
-      data[[i]] <- dl;
-      data[[i]] <- force(data[[i]]);
+    for(i in seq.int(from=1L, to=length(data)-1L)) {
+      dl <- data[[i]];
+      need <- !vapply(dl,
+                    function(d1) {
+                      any(vapply(seq.int(from=(i+1L), to=length(data)),
+                             function(j) {
+                               any(vapply(data[[j]],
+                                          function(d2) identical(d1, d2),
+                                          FALSE))
+                             }, FALSE))
+                    }, FALSE);
+      l1 <- length(dl);
+      l2 <- sum(need);
+      if(l2 < l1) {
+        config$logger("reduced line count due to overlap from ", l1, " to ", l2);
+        dl <- dl[need];
+        dl <- force(dl);
+        data[[i]] <- dl;
+        data[[i]] <- force(data[[i]]);
+      }
     }
-  }
 
-  config$logger("finished trying to reduce data.");
+    config$logger("finished trying to reduce data.");
+  }
 
   f.range <- range(unlist(lapply(data,
                                  function(d) {
@@ -188,7 +190,10 @@
 #' @param name the file name (omit for auto-generate)
 #' @param max.t the maximum time index (omit for 3 minutes, as in the AITOA
 #'   book)
-#' @return the fully-qualified path to the file
+#' @param plot.single should the diagrams be plotted separately?
+#' @return the fully-qualified path to the file (in case of
+#'   \code{plot.single==FALSE}) or a vector with the paths to all generated
+#'   files
 #' @include algorithm_parameters_frame.R
 #' @include setups.R
 #' @include utils.R
@@ -196,7 +201,8 @@
 #' @importFrom graphics par
 #' @export aitoa.plot.progress
 aitoa.plot.progress <- function(config, setups, ..., name=NULL,
-                                max.t=(3L*60L*1000L)) {
+                                max.t=(3L*60L*1000L),
+                                plot.single=FALSE) {
   stopifnot(length(setups) > 0L,
             is.integer(max.t),
             is.finite(max.t),
@@ -283,42 +289,81 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
   }
   stopifnot(nchar(name) > 0L);
 
-  file <- file.path(.dir.plots("progress", config=config),
-                    .graphics.name(config, name));
-
   colors <- colors.distinct(n=length(setups));
 
-  res <- .graphic(config=config,
-           path=file,
-           width=6L,
-           height=(2.15*length(instances)),
-           expr = {
-             mar <- 0.5*par()$mar;
-             mar[3L] <- 0.25 * mar[3L];
-             mar[1L] <- 0.85 * mar[1L];
-             mar[4L] <- 0.15 * mar[4L];
-             p1 <- par(cex=0.78, mar=mar);
-             p2 <- par(mfrow=c(length(instances), 1L));
-             for(instance in instances) {
-               .plot.progress.inst(config,
-                                   instance,
-                                   names.setup,
-                                   names.name,
-                                   files.setup,
-                                   files.instance,
-                                   files.file,
-                                   colors,
-                                   ...,
-                                   max.t=max.t);
-             }
-             par(p2);
-             par(p1);
-           });
+  if(plot.single) {
+    dir <- .dir.plots("progress", "single", config=config);
 
-  stopifnot(file.exists(res));
-  config$logger("done plotting to file '", res, "', now post-processing.");
-  res <- .post.process.plot.progress(res);
-  stopifnot(file.exists(res));
-  config$logger("done post-processing file '", res, "'.");
-  return(res);
+    files <- vapply(instances, function(instance) {
+      file <- file.path(dir, .graphics.name(config, paste0(name, "_", instance)));
+      file <- .graphic(config=config,
+               path=file,
+               width=6L,
+               height=.golden.ratio*6L,
+               expr = {
+                 mar <- 0.5*par()$mar;
+                 mar[3L] <- 0.25 * mar[3L];
+                 mar[1L] <- 0.85 * mar[1L];
+                 mar[4L] <- 0.15 * mar[4L];
+                 p1 <- par(cex=0.78, mar=mar);
+                 .plot.progress.inst(config,
+                                     instance,
+                                     names.setup,
+                                     names.name,
+                                     files.setup,
+                                     files.instance,
+                                     files.file,
+                                     colors,
+                                     ...,
+                                     max.t=max.t);
+                 par(p1);
+               });
+    }, "");
+
+  } else {
+    file <- file.path(.dir.plots("progress", "combined", config=config),
+                      .graphics.name(config, name));
+    file <- .graphic(config=config,
+             path=file,
+             width=6L,
+             height=(2.15*length(instances)),
+             expr = {
+               mar <- 0.5*par()$mar;
+               mar[3L] <- 0.25 * mar[3L];
+               mar[1L] <- 0.85 * mar[1L];
+               mar[4L] <- 0.15 * mar[4L];
+               p1 <- par(cex=0.78, mar=mar);
+               p2 <- par(mfrow=c(length(instances), 1L));
+               for(instance in instances) {
+                 .plot.progress.inst(config,
+                                     instance,
+                                     names.setup,
+                                     names.name,
+                                     files.setup,
+                                     files.instance,
+                                     files.file,
+                                     colors,
+                                     ...,
+                                     max.t=max.t);
+               }
+               par(p2);
+               par(p1);
+             });
+
+    files <- c(file);
+    config$logger("done plotting to file '", file, "', now post-processing.");
+  }
+
+  for(i in seq_along(files)) {
+    file <- files[[i]];
+    stopifnot(file.exists(file));
+    if(config$graphics.ext == "svg") {
+      file <- .post.process.plot.progress(file);
+      stopifnot(file.exists(file));
+      config$logger("done post-processing file '", file, "'.");
+      files[[i]] <- file;
+    }
+  }
+
+  return(files);
 }

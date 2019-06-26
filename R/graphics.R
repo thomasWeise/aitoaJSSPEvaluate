@@ -1,3 +1,6 @@
+
+.golden.ratio <- 2 / (1 + sqrt(5))
+
 # obtain a graphics name
 #' @include utils.R
 .graphics.name <- function(config, base) {
