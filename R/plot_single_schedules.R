@@ -87,17 +87,19 @@ aitoa.plot.gantt.charts.single <- function(setup,
     limit <- instances[[n]];
     if(is.null(limit)) {
       limit <- NA_integer_;
+      lt <- "";
     } else {
       stopifnot(is.integer(limit), limit>0L);
+      lt <- paste0("_", limit);
     }
 
     path <- file.path(.dir, .graphics.name(config, paste0("jssp_gantt_",
-                                           setup, "_", n, "_", stat)));
+                                           setup, "_", n, "_", stat, lt)));
 
     res[[n]] <-  .graphic(config=config,
                            path=path,
-                           width=6L,
-                           height=6*.golden.ratio,
+                           width=5L,
+                           height=5*.golden.ratio,
                            expr = {
                              mar <- 0.5*par()$mar;
                              mar[3L] <- 0.25 * mar[3L];
