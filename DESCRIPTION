@@ -36,3 +36,4 @@ Collate:
     'graphics.R'
     'plot_progress.R'
     'plot_schedules.R'
+    'plot_single_schedules.R'

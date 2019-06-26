@@ -2,7 +2,7 @@
 # plot a single gantt chart
 #' @include config.R
 #' @importFrom graphics legend
-.plot.gantt <- function(instance, config, path, value, m) {
+.plot.gantt <- function(instance, config, path, value, m, t.lim=NA_integer_) {
   path <- file.path(config$dir.results, path);
   stopifnot(file.exists(path), file.size(path) > 100L);
   config$logger("loading file ", path);
@@ -26,6 +26,12 @@
   code.2 <- substr(code, start=(nchar(code)-1L), stop=nchar(code));
   stopifnot(nchar(code.2) > 0L);
   code.3 <- ', xlab=NA, ylab=NA, prefix.machine="", print.jobs=FALSE';
+  if(!is.na(t.lim)) {
+    stopifnot(is.finite(t.lim), is.integer(t.lim), t.lim > 1L)
+    code.3.l <- nchar(code.3);
+    code.3 <- paste0(code.3, ", xlim=c(0L,", t.lim, "L)");
+    stopifnot((nchar(code.3)-14L) > code.3.l);
+  }
   code <- paste(code.1, code.3, code.2, sep="", collapse="");
   stopifnot(nchar(code) == (nchar(code.1) + nchar(code.2) + nchar(code.3)));
   rm("code.1");
@@ -39,7 +45,9 @@
 
   label <- paste0(instance, " / ", value);
   col <- rgb(0.89, 0.89, 0.89, alpha=0.75);
-  legend(x=0.5*value, y=0.3*m/10,
+
+  if(is.na(t.lim)) { t.lim = value; }
+  legend(x=0.5*t.lim, y=0.3*m/10,
          xjust=0.5,
          yjust=0.5,
          adj=c(0.1, 0.2),
