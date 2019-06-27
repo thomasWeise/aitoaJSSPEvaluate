@@ -302,7 +302,7 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
                height=.golden.ratio*6L,
                expr = {
                  mar <- 0.5*par()$mar;
-                 mar[3L] <- 0.25 * mar[3L];
+                 #mar[3L] <- 0.25 * mar[3L];
                  mar[1L] <- 0.85 * mar[1L];
                  mar[4L] <- 0.15 * mar[4L];
                  p1 <- par(cex=0.78, mar=mar);
