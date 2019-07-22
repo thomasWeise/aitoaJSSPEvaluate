@@ -65,35 +65,31 @@
 #' @include end_results_stats.R
 #' @include utils.R
 #' @include graphics.R
+#' @include get_names.R
 #' @importFrom plotteR plots.arrange
 #' @importFrom graphics par
 #' @export aitoa.plot.gantt.charts
 aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
   config$logger("plotting Gantt charts: first loading data");
   frame <- aitoa.end.results.statistics.frame(config);
-  stopifnot(is.data.frame(frame), nrow(frame) > 0L, ncol(frame) > 0L);
+  stopifnot(is.data.frame(frame),
+            nrow(frame) > 0L,
+            nrow(frame) >= config$min.instances,
+            ncol(frame) > 0L);
 
-  names <- aitoa.algorithm.parameters.frame(config);
-  stopifnot(is.data.frame(names), nrow(names) > 0L, nrow(names) <= nrow(frame));
 
-  features <- aitoa.instance.features.frame(config);
-  stopifnot(is.data.frame(features), nrow(features) > 0L, ncol(features) > 0L);
-
-  config$logger("data loaded, now picking algorithms");
   setups <- unique(unname(unlist(frame$algorithm)));
   stopifnot(length(setups) > 0L);
-  name.1 <- unname(unlist(names$algo.setup));
-  stopifnot(length(name.1) == length(setups),
-            length(unique(name.1)) == length(name.1));
-  name.1.in.setups <- vapply(name.1, function(nn) which(setups==nn), 1L);
-  stopifnot(all(name.1.in.setups > 0L), all(name.1.in.setups <= length(setups)));
-  rm("name.1.in.setups");
-  setups.in.name.1 <- vapply(setups, function(nn) which(name.1==nn), 1L);
-  stopifnot(all(setups.in.name.1 > 0L), all(setups.in.name.1 <= length(name.1)));
-  rm("name.1");
-  names <- unname(unlist(names$algo.name[setups.in.name.1]));
-  rm("setups.in.name.1");
+  names <- .get.setup.names(setups, config);
   stopifnot(length(names) == length(setups));
+
+  features <- aitoa.instance.features.frame(config);
+  stopifnot(is.data.frame(features),
+            nrow(features) > 0L,
+            nrow(features) >= config$min.instances,
+            ncol(features) > 0L);
+
+  config$logger("data loaded, now picking algorithms");
   chosen <- !is.na(names);
   stopifnot(sum(chosen) > 0L);
   names <- names[chosen];
