@@ -198,7 +198,7 @@
 #' @include setups.R
 #' @include utils.R
 #' @importFrom plotteR colors.distinct
-#' @importFrom graphics par
+#' @importFrom graphics par plot
 #' @export aitoa.plot.progress
 aitoa.plot.progress <- function(config, setups, ..., name=NULL,
                                 max.t=(3L*60L*1000L),

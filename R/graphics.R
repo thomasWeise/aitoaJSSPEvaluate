@@ -22,7 +22,7 @@
 
 
 #' @include config.R
-#' @importFrom grDevices svg
+#' @importFrom grDevices cairo_pdf cairo_ps svg dev.off
 #' @importFrom graphics par
 .graphic <- function(config, path, width, height, expr) {
   if(!file.exists(path)) {

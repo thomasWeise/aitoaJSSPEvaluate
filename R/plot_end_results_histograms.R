@@ -2,6 +2,7 @@
 #' @importFrom stats dnorm ks.test median quantile sd shapiro.test
 #' @importFrom tseries jarque.bera.test
 #' @importFrom graphics hist legend lines
+#' @importFrom grDevices rgb
 .end.result.histogram <- function(v, inst, put.leg=TRUE) {
   v <- as.integer(unname(unlist(v)));
   v.unique <- sort(unique(v));
