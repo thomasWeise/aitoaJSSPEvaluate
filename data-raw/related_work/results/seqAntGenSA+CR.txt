@@ -1,4 +1,4 @@
-instance,best.f.mean,best.f.min,total.time.mean
+inst.name,best.f.mean,best.f.min,total.time.mean
 ft06,55,55,6600
 ft10,955.3,950,556800
 ft20,1177.3,1176,463200

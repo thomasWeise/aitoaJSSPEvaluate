@@ -1,4 +1,4 @@
-instance,n.runs,best.f.min,best.f.mean,total.time.mean
+inst.name,n.runs,best.f.min,best.f.mean,total.time.mean
 ft06,10,55,55,300
 ft10,10,930,931,1208000
 ft20,10,1165,1172,4114000

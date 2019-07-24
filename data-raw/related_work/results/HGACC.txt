@@ -1,4 +1,4 @@
-instance,n.runs,best.f.min,best.f.max,best.f.mean,best.f.sd,best.f.med,last.improvement.time.min
+inst.name,n.runs,best.f.min,best.f.max,best.f.mean,best.f.sd,best.f.med,last.improvement.time.min
 ft10,30,930,930,930,0,930,5310
 la16,30,945,945,945,0,945,60
 la17,30,784,784,784,0,784,160
