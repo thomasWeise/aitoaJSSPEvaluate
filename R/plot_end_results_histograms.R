@@ -1,7 +1,7 @@
 
 #' @importFrom stats dnorm ks.test median quantile sd shapiro.test
 #' @importFrom tseries jarque.bera.test
-#' @importFrom graphics hist legend lines
+#' @importFrom graphics hist legend lines abline
 #' @importFrom grDevices rgb
 .end.result.histogram <- function(v, inst, put.leg=TRUE) {
   v <- as.integer(unname(unlist(v)));

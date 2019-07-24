@@ -17,6 +17,10 @@ dir.data.raw <- dirname(sys.frame(1)$ofile);
 dir.data.raw <- normalizePath(dir.data.raw, mustWork = TRUE);
 stopifnot(dir.exists(dir.data.raw));
 
+dir.R <- file.path(dir.data.raw, "..", "R");
+dir.R <- normalizePath(dir.R, mustWork = TRUE);
+stopifnot(dir.exists(dir.R));
+
 # do the JSSP dataset
 logger("making JSSP instances dataset.");
 source(file.path(dir.data.raw, "make_instances.R"));
@@ -38,11 +42,12 @@ usethis::use_data(jsspInstances,
                   compress="xz", version=3L, overwrite = TRUE);
 
 rm("dir.data.raw");
+rm("dir.R");
 rm("jsspInstances");
 rm("jsspRelatedWorkResults");
 
-options(old.options);
-rm("old.options");
-
 logger("all done.");
 rm("logger");
+
+options(old.options);
+rm("old.options");

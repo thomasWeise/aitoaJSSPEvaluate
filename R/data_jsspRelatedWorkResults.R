@@ -1,0 +1,118 @@
+#' Results for the JSSP Instances from Related Work
+#'
+#' This dataset provides results from related work for the JSSP instances.
+#' The bibliographic data is given in the file bibliography.bib in the
+#' related_work folder inside data-raw.
+#'
+#' @docType data
+#'
+#' @usage data(jsspRelatedWorkResults)
+#'
+#' @format A data frame with results from the related work.
+#'
+#' @keywords Job Shop Scheduling, JSSP, instances, results, bounds
+#'
+#' @references T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
+#'   scheduling problem: {A} computational study," \emph{{Journal of Software
+#'   Engineering and Applications ({JSEA})}}, vol. 3, no. 12, pp. 1155--1162, Dec.
+#'   2010. [Online]. Available:
+#'   \url{http://www.scirp.org/journal/paperinformation.aspx?paperid=3561}
+#'   
+#'   R. F. Abdel{-}Kader, "An improved {PSO} algorithm with genetic and
+#'   neighborhood-based diversity operators for the job shop scheduling problem,"
+#'   \emph{{Applied Artificial Intelligence -- An International Journal}},
+#'   vol. 32, no. 5, pp. 433--462, Jun. 2018.
+#'   
+#'   K. Akram, K. Kamal, and A. Zeb, "Fast simulated annealing hybridized with
+#'   quenching for solving job shop scheduling problem," \emph{{Applied Soft
+#'   Computing Journal ({ASOC})}}, vol. 49, pp. 510--523, Dec. 2016.
+#'   
+#'   C. Bierwirth, "A generalized permutation approach to job shop scheduling with
+#'   genetic algorithms," \emph{{{O}perations-{R}esearch-{S}pektrum ({OR}
+#'   Spectrum)}}, vol. 17, pp. 87--92, Jun. 1995. [Online]. Available:
+#'   \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.52.7392\&type=pdf}
+#'   
+#'   J. C. Beck, T. K. Feng, and J. Watson, "Combining constraint programming and
+#'   local search for job-shop scheduling," \emph{{{INFORMS} Journal on
+#'   Computing}}, vol. 23, no. 1, pp. 1--14, 2011. [Online]. Available:
+#'   \url{http://cfwebprod.sandia.gov/cfdocs/CompResearch/docs/ists-sgmpcs.pdf}
+#'   
+#'   M. A. Cruz{-}Ch{\'a}vez, M. H. {Cruz Rosales}, J. C. Zavala{-}D{\'i}az,
+#'   J. A. H. Aguilar, A. Rodriguez{-}Le{\'o}, J. C. P. Avelino, M. E. L.
+#'   Orziz, and O. H. Salinas, "Hybrid micro genetic multi-population algorithm
+#'   with collective communication for the job shop scheduling problem,"
+#'   \emph{{{IEEE} Access}}, vol. 7, pp. 82\,358--82\,376, Jun. 2019. [Online].
+#'   Available: \url{http://ieeexplore.ieee.org/document/8743353}
+#'   
+#'   T. C. E. Cheng, B. Peng, and Z. L{\"{u}}, "A hybrid evolutionary algorithm to
+#'   solve the job shop scheduling problem," \emph{{Annals of Operations
+#'   Research}}, vol. 242, no. 2, pp. 223--237, Jul. 2016.
+#'   
+#'   T. Dao, T. Pan, T. Nguyen, and J. Pan, "Parallel bat algorithm for optimizing
+#'   makespan in job shop scheduling problems," \emph{{Journal of Intelligent
+#'   Manufacturing}}, vol. 29, no. 2, pp. 451--462, Feb. 2018.
+#'   
+#'   L. Hern{\'a}ndez{-}Ram{\'i}rez, J. F. Solis, G. Castilla-Valdez, J. J.
+#'   Gonz{\'a}lez{-}Barbosa, D. Ter{\'a}n{-}Villanueva, and M. L.
+#'   Morales{-}Rodr{\'i}guez, "A hybrid simulated annealing for job shop
+#'   scheduling problem," \emph{{International Journal of Combinatorial
+#'   Optimization Problems and Informatics ({IJCOPI})}}, vol. 10, no. 1, pp.
+#'   6--15, Jan.--Apr. 2019, published 2018-08-10. [Online]. Available:
+#'   \url{http://ijcopi.org/index.php/ojs/article/view/111}
+#'   
+#'   V. Jorapur, V. S. Puranik, A. S. Deshpande, and M. R. Sharma, "Comparative
+#'   study of different representations in genetic algorithms for job shop
+#'   scheduling problem," \emph{{Journal of Software Engineering and Applications
+#'   ({JSEA})}}, vol. 7, no. 7, pp. 571--580, Jun. 2014. [Online]. Available:
+#'   \url{http://www.scirp.org/journal/paperinformation.aspx?paperid=46670}
+#'   
+#'   T. Jiang and C. Zhang, "Application of grey wolf optimization for solving
+#'   combinatorial problems: {J}ob shop and flexible job shop scheduling cases,"
+#'   \emph{{{IEEE} Access}}, vol. 6, pp. 26\,231--26\,240, May 2018. [Online].
+#'   Available: \url{http://ieeexplore.ieee.org/document/8355479}
+#'   
+#'   L. Li, W. Weng, and S. Fujimura, "An improved teaching-learning-based
+#'   optimization algorithm to solve job shop scheduling problems," in \emph{16th
+#'   {IEEE/ACIS} International Conference on Computer and Information Science
+#'   {(ICIS'17)}, May 24--26, 2017, {Wuhan}, {China}}, G. Zhu, S. Yao, X. Cui, and
+#'   S. Xu, Eds. {IEEE} Computer Society,
+#'   2017, pp. 797--801.
+#'   
+#'   J. Miller{-}Todd, K. Steinh{\"{o}}fel, and P. Veenstra, "Firefly-inspired
+#'   algorithm for job shop scheduling," in \emph{Adventures Between Lower Bounds
+#'   and Higher Altitudes -- Essays Dedicated to Juraj Hromkovi{{c}} on the
+#'   Occasion of His 60th Birthday}, ser. {Lecture Notes in Computer Science
+#'   ({LNCS})}, H. B{\"{o}}ckenhauer, D. Komm, and W. Unger, Eds. Springer, 2018, vol. 11011, pp. 423--433.
+#'   
+#'   P. Pongchairerks, "A two-level metaheuristic algorithm for the job-shop
+#'   scheduling problem," \emph{{Complexity}}, vol. 2019, pp. 1--11, 2019.
+#'   [Online]. Available:
+#'   \url{http://www.hindawi.com/journals/complexity/2019/8683472/}
+#'   
+#'   N. Sharma, H. Sharma, and A. Sharma, "Beer froth artificial bee colony
+#'   algorithm for job-shop scheduling problem," \emph{{Applied Soft Computing
+#'   Journal ({ASOC})}}, vol. 68, pp. 507--524, 2018.
+#'   
+#'   L. Wang, J. Cai, and M. Li, "An adaptive multi-population genetic algorithm
+#'   for job-shop scheduling problem," \emph{{Advances in Manufacturing}},
+#'   vol. 4, pp. 142--149, Jun. 2016.
+#'   
+#'   S. Wang, C. Tsai, and M. Chiang, "A high performance search algorithm for
+#'   job-shop scheduling problem," in \emph{The 9th International Conference on
+#'   Emerging Ubiquitous Systems and Pervasive Networks ({EUSPN'18}) / The 8th
+#'   International Conference on Current and Future Trends of Information and
+#'   Communication Technologies in Healthcare ({ICTH'18}) / Affiliated Workshops,
+#'   Nov. 5--8, 2018, {Leuven}, {Belgium}}, ser. {Procedia Computer Science},
+#'   E. M. Shakshuki and A. Yasar, Eds., vol. 141. Elsevier, 2018, pp. 119--126.
+#'   
+#'   H. Zupan, N. Herakovi{{c}}, and J. {{Z}}erovnik, "A heuristic for the job
+#'   shop scheduling problem," in \emph{The 7th International Conference on
+#'   Bioinspired Optimization Methods and their Application {(BIOMA'16)},
+#'   May 18--20, 2016, {Bled}, {Slovenia}}, G. Papa and M. Mernik, Eds. Ljubljana, Slovenia: Jo{{z}}ef Stefan
+#'   Institute, 2016, pp. 187--198. [Online]. Available:
+#'   \url{http://bioma.ijs.si/conference/BIOMA2016Proceedings.pdf}
+#'
+#' @examples
+#' data(jsspRelatedWorkResults)
+#' print(jsspRelatedWorkResults$inst.name)
+"jsspRelatedWorkResults"

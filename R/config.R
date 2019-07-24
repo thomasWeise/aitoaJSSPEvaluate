@@ -20,6 +20,7 @@
 #'   data frame with the names and features of instances, which must be
 #'   formatted exactly as documented in \link{jsspInstances}
 #' @return the configuration object
+#' @importFrom utils data
 #' @export aitoa.config
 aitoa.config <- function(dir.results="./results",
                          dir.evaluation="./evaluation",

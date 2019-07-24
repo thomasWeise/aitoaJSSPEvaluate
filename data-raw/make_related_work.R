@@ -29,7 +29,7 @@ stopifnot(is.data.frame(algorithms),
           nrow(algorithms) > 0L,
           identical(colnames(algorithms),
                     c("algorithm",
-                      "paper",
+                      "reference",
                       "year",
                       "programming.language",
                       "system.processor.name",
@@ -144,7 +144,9 @@ load.algorithm <- function(algorithm.row) {
                       total.fes.max=rep(NA_integer_, rows),
                       total.fes.sd=rep(NA_real_, rows));
 
+  frame <- force(frame);
   cols.out <- colnames(frame);
+  cols.out <- force(cols.out);
   stopifnot(all(vapply(cols.in, function(cc) isTRUE(sum(cols.out == cc) == 1L), FALSE)));
 
   logger("constructing frame for algorithm '", algorithm, "'.");
@@ -252,6 +254,7 @@ load.algorithm <- function(algorithm.row) {
             if(!(col.mean %in% cols.in)) {
               old <- frame[col.mean][same];
               frame[col.mean][same] <- frame[col.min][same];
+              frame <- force(frame);
               if(!(identical(old, frame[col.mean][same]))) {
                 should.repeat <- TRUE;
                 should.repeat <- force(should.repeat);
@@ -263,6 +266,7 @@ load.algorithm <- function(algorithm.row) {
             if(!(col.med %in% cols.in)) {
               old <- frame[col.med][same];
               frame[col.med][same] <- frame[col.min][same];
+              frame <- force(frame);
               if(!(identical(old, frame[col.med][same]))) {
                 should.repeat <- TRUE;
                 should.repeat <- force(should.repeat);
@@ -277,6 +281,7 @@ load.algorithm <- function(algorithm.row) {
             } else {
               old <- frame[col.sd][same];
               frame[col.sd][same] <- 0L;
+              frame <- force(frame);
               if(!(identical(old, frame[col.sd][same]))) {
                 should.repeat <- TRUE;
                 should.repeat <- force(should.repeat);
@@ -304,6 +309,7 @@ load.algorithm <- function(algorithm.row) {
                 } else {
                   old <- frame[col.b][same];
                   frame[col.b][same] <- frame[col.a][same];
+                  frame <- force(frame);
                   if(!identical(old, frame[col.b][same])) {
                     should.repeat <- TRUE;
                     should.repeat <- force(should.repeat);
@@ -325,6 +331,7 @@ load.algorithm <- function(algorithm.row) {
       }
     }
   }
+  frame <- force(frame);
 
 # sanity check against bounds
   for(choice in c("best.f.min", "best.f.mean", "best.f.med", "best.f.max")) {
@@ -336,23 +343,28 @@ load.algorithm <- function(algorithm.row) {
 
 
   logger("finished loading and processing data for algorithm '", algorithm, "'.");
+  frame <- force(frame);
   frame$inst.name <- as.character(unname(unlist(frame$inst.name)));
   rownames(frame) <- NULL;
   frame <- force(frame);
+
   return(frame);
 }
 
 # load all algorithms
 jsspRelatedWorkResults <- lapply(seq_len(nrow(algorithms)), function(i) load.algorithm(algorithms[i,]));
+jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
+
 rm("load.algorithm");
 rm("dir.results");
-rm("dir.related.work");
 logger("all data loaded, now post-processng");
 
 # merge all the data
 jsspRelatedWorkResults <- do.call(rbind, jsspRelatedWorkResults);
 jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
+
 rownames(jsspRelatedWorkResults) <- NULL;
+jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
 
 stopifnot(is.data.frame(jsspRelatedWorkResults),
           nrow(jsspRelatedWorkResults) >= nrow(algorithms),
@@ -385,7 +397,184 @@ rm("algorithms");
                      function(n) jsspRelatedWorkResults[n]);
 
 jsspRelatedWorkResults <- jsspRelatedWorkResults[do.call(order, .sort.cols),];
+jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
 rownames(jsspRelatedWorkResults) <- NULL;
 jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
+jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
 
-logger("completed construction of JSSP related work dataset.")
+
+logger("completed construction of JSSP related work dataset, now building documentation (this needs LaTeX.")
+
+bibliography.name <- "bibliography.bib";
+bibliography.file <- normalizePath(file.path(dir.related.work, bibliography.name), mustWork = TRUE);
+rm("dir.related.work");
+stopifnot(file.exists(bibliography.file),
+          file.size(bibliography.file) > 0L);
+
+temp.dir <- tempfile();
+dir.create(temp.dir, recursive=TRUE, showWarnings = TRUE);
+stopifnot(dir.exists(temp.dir));
+logger("created temp dir '", temp.dir, "'.");
+
+logger("loading and pre-processing bibliography");
+bib.data <- readLines(con=bibliography.file);
+bib.data <- force(bib.data);
+stopifnot(length(bib.data) > 0L,
+          sum(nchar(bib.data)) > 0L);
+placeholder.char <- "#{@,\"{{}}@,#";
+bib.data <- gsub("\\&", placeholder.char, bib.data, fixed=TRUE);
+bib.data <- force(bib.data);
+bib.data <- gsub("&", "\\&", bib.data, fixed=TRUE);
+bib.data <- force(bib.data);
+bib.data <- gsub(placeholder.char, "\\&", bib.data, fixed=TRUE);
+bib.data <- force(bib.data);
+
+rm("placeholder.char");
+bibliography.dest <- file.path(temp.dir, bibliography.name);
+writeLines(text=bib.data, con=bibliography.dest);
+stopifnot(file.exists(bibliography.dest),
+          file.size(bibliography.dest) >= (sum(nchar(bib.data))+length(bib.data)));
+logger("copied bibliography '", bibliography.file, " to '", bibliography.dest, "'.");
+rm("bib.data");
+rm("bibliography.dest");
+rm("bibliography.file");
+
+
+latex.name.base <- "article";
+latex.name <- paste0(latex.name.base, ".tex");
+latex.file <- file.path(temp.dir, latex.name);
+latex.text <- c("\\documentclass[journal]{IEEEtran}%",
+                "\\begin{document}%",
+                "\\author{bla}%",
+                "\\title{bla}%",
+                "\\maketitle%",
+                paste0("\\cite{", paste(sort(unique(
+                  as.character(unname(unlist(
+                    jsspRelatedWorkResults$reference))))),
+                  sep=",", collapse=","), "}%"),
+                "\\bibliographystyle{IEEEtran}%",
+                paste0("\\bibliography{", bibliography.name, "}%"),
+                "\\end{document}%",
+                "\\endinput%");
+latex.text <- force(latex.text);
+
+writeLines(text = latex.text,
+           con=latex.file);
+stopifnot(file.exists(latex.file),
+          file.size(latex.file) >= sum(nchar(latex.text)) + length(latex.text));
+logger("created temporary latex file '", latex.file, "'.");
+rm("latex.text");
+
+pdflatex.args <- paste0("cd '", temp.dir, "' && pdflatex -halt-on-error -interaction=nonstopmode ", latex.name);
+bibtex.args <- paste0("cd '", temp.dir, "' && bibtex ", latex.name.base);
+stopifnot(system(pdflatex.args) == 0L);
+stopifnot(system(bibtex.args) == 0L);
+stopifnot(system(pdflatex.args) == 0L);
+stopifnot(system(bibtex.args) == 0L);
+stopifnot(system(pdflatex.args) == 0L);
+stopifnot(system(bibtex.args) == 0L);
+rm("bibtex.args");
+rm("pdflatex.args");
+
+logger("done running latex-bibtex chain.");
+stopifnot(file.exists(file.path(temp.dir, paste0(latex.name.base, ".pdf"))));
+bbl.file <- file.path(temp.dir, paste0(latex.name.base, ".bbl"));
+stopifnot(file.exists(bbl.file));
+
+bibliography <- readLines(bbl.file);
+bibliography <- force(bibliography);
+stopifnot(length(bibliography) > 0L,
+          sum(nchar(bibliography)) > 0L);
+
+
+rm("latex.name.base");
+rm("latex.name");
+rm("latex.file");
+rm("bbl.file");
+rm("bibliography.name");
+unlink(temp.dir, recursive=TRUE, force=TRUE);
+stopifnot(!dir.exists(temp.dir));
+rm("temp.dir");
+
+i <- grep("\\bibitem", bibliography, fixed=TRUE);
+stopifnot(length(i) > 0L);
+i <- i[[1L]];
+stopifnot(i > 0L,
+          i < length(bibliography));
+bibliography <- bibliography[(i+1):length(bibliography)];
+rm("i");
+bibliography <- force(bibliography);
+stopifnot(length(bibliography) > 0L);
+bibliography <- bibliography[!startsWith(bibliography, "\\")];
+bibliography <- force(bibliography);
+stopifnot(length(bibliography) > 0L);
+bibliography <- trimws(bibliography);
+bibliography <- force(bibliography);
+stopifnot(sum(nchar(bibliography)) > 0L);
+
+placeholder.char <- "#{@,\"{{}}@,#";
+bibliography <- paste(bibliography, sep=placeholder.char, collapse=placeholder.char);
+bibliography <- gsub("\\\\hskip.*?\\\\relax", "", bibliography, fixed=FALSE);
+bibliography <- force(bibliography);
+stopifnot(nchar(bibliography) > 0L);
+bibliography <- strsplit(bibliography, placeholder.char, fixed=TRUE)[[1L]];
+rm("placeholder.char");
+bibliography <- force(bibliography);
+stopifnot(length(bibliography) > 0L);
+
+bibliography <- gsub("``", '"', bibliography, fixed=TRUE);
+bibliography <- force(bibliography);
+bibliography <- gsub("''", '"', bibliography, fixed=TRUE);
+bibliography <- force(bibliography);
+bibliography <- gsub("{\\v{", '{{', bibliography, fixed=TRUE);
+bibliography <- force(bibliography);
+bibliography <- gsub("{\\i}", 'i', bibliography, fixed=TRUE);
+bibliography <- force(bibliography);
+bibliography <- gsub("~", "\u00a0", bibliography, fixed=TRUE);
+bibliography <- force(bibliography);
+
+logger("finished compiling, loading, and processing bibliography.");
+
+
+template.1 <- c("#' Results for the JSSP Instances from Related Work",
+                "#'",
+                "#' This dataset provides results from related work for the JSSP instances.",
+                "#' The bibliographic data is given in the file bibliography.bib in the",
+                "#' related_work folder inside data-raw.",
+                "#'",
+                "#' @docType data",
+                "#'",
+                "#' @usage data(jsspRelatedWorkResults)",
+                "#'",
+                "#' @format A data frame with results from the related work.",
+                "#'",
+                "#' @keywords Job Shop Scheduling, JSSP, instances, results, bounds",
+                "#'");
+
+b1 <- paste0("#' @references ", bibliography[[1L]]);
+b2 <- vapply(bibliography[2L:length(bibliography)],
+             function(s) paste0("#'   ", s), "");
+b1 <- force(b1);
+b2 <- force(b2);
+
+template.2 <- c("#'",
+                "#' @examples",
+                "#' data(jsspRelatedWorkResults)",
+                "#' print(jsspRelatedWorkResults$inst.name)",
+                "\"jsspRelatedWorkResults\"");
+
+dest.file <- file.path(dir.R, "data_jsspRelatedWorkResults.R");
+writeLines(text=unname(unlist(c(template.1, b1, b2, template.2))),
+           con=dest.file);
+
+stopifnot(file.exists(dest.file),
+          file.size(dest.file) > 0L);
+
+rm("dest.file");
+rm("b1");
+rm("b2");
+rm("template.1");
+rm("template.2");
+
+
+

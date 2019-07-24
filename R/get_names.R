@@ -10,8 +10,7 @@
 
   names <- aitoa.algorithm.parameters.frame(config);
   stopifnot(is.data.frame(names),
-            nrow(names) > 0L,
-            nrow(names) <= nrow(frame));
+            nrow(names) > 0L);
 
   name.1 <- unname(unlist(names$algo.setup));
   stopifnot(length(name.1) == length(setups),

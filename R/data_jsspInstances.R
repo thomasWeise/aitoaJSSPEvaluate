@@ -37,23 +37,3 @@
 #' data(jsspInstances)
 #' print(jsspInstances$inst.name)
 "jsspInstances"
-
-
-#' Results for the JSSP Instances from Related Work
-#'
-#' This dataset provides results from related work for the JSSP instances.
-#' The bibliographic data is given in the file bibliography.bib in the
-#' related_work folder inside data-raw.
-#'
-#' @docType data
-#'
-#' @usage data(jsspRelatedWorkResults)
-#'
-#' @format A data frame with results from the related work.
-#'
-#' @keywords Job Shop Scheduling, JSSP, instances, results, bounds
-#'
-#' @examples
-#' data(jsspRelatedWorkResults)
-#' print(jsspRelatedWorkResults$inst.name)
-"jsspRelatedWorkResults"
