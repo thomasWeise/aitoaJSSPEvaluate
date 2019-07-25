@@ -33,6 +33,10 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   quenching for solving job shop scheduling problem," \emph{{Applied Soft
   Computing Journal ({ASOC})}}, vol. 49, pp. 510--523, Dec. 2016.
   
+  M. Amirghasemi and R. Zamani, "An effective asexual genetic algorithm for
+  solving the job shop scheduling problem," \emph{{Computers {\&} Industrial
+  Engineering}}, vol. 83, pp. 123--138, May 2015.
+  
   C. Bierwirth, "A generalized permutation approach to job shop scheduling with
   genetic algorithms," \emph{{{O}perations-{R}esearch-{S}pektrum ({OR}
   Spectrum)}}, vol. 17, pp. 87--92, Jun. 1995. [Online]. Available:

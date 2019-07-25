@@ -123,26 +123,38 @@ load.algorithm <- function(algorithm.row) {
                       best.f.med=rep(NA_real_, rows),
                       best.f.max=rep(NA_integer_, rows),
                       best.f.sd=rep(NA_real_, rows),
-                      last.improvement.time.min=rep(NA_integer_, rows),
-                      last.improvement.time.mean=rep(NA_real_, rows),
-                      last.improvement.time.med=rep(NA_real_, rows),
-                      last.improvement.time.max=rep(NA_integer_, rows),
-                      last.improvement.time.sd=rep(NA_real_, rows),
-                      total.time.min=rep(NA_integer_, rows),
-                      total.time.mean=rep(NA_integer_, rows),
-                      total.time.med=rep(NA_real_, rows),
-                      total.time.max=rep(NA_integer_, rows),
-                      total.time.sd=rep(NA_real_, rows),
+                      reach.best.f.min.fes.min=rep(NA_integer_, rows),
+                      reach.best.f.min.fes.mean=rep(NA_real_, rows),
+                      reach.best.f.min.fes.med=rep(NA_real_, rows),
+                      reach.best.f.min.fes.max=rep(NA_integer_, rows),
+                      reach.best.f.min.fes.sd=rep(NA_real_, rows),
+                      reach.best.f.min.time.min=rep(NA_integer_, rows),
+                      reach.best.f.min.time.mean=rep(NA_real_, rows),
+                      reach.best.f.min.time.med=rep(NA_real_, rows),
+                      reach.best.f.min.time.max=rep(NA_integer_, rows),
+                      reach.best.f.min.time.sd=rep(NA_real_, rows),
                       last.improvement.fes.min=rep(NA_integer_, rows),
                       last.improvement.fes.mean=rep(NA_real_, rows),
                       last.improvement.fes.med=rep(NA_real_, rows),
                       last.improvement.fes.max=rep(NA_integer_, rows),
                       last.improvement.fes.sd=rep(NA_real_, rows),
+                      last.improvement.time.min=rep(NA_integer_, rows),
+                      last.improvement.time.mean=rep(NA_real_, rows),
+                      last.improvement.time.med=rep(NA_real_, rows),
+                      last.improvement.time.max=rep(NA_integer_, rows),
+                      last.improvement.time.sd=rep(NA_real_, rows),
                       total.fes.min=rep(NA_integer_, rows),
                       total.fes.mean=rep(NA_integer_, rows),
                       total.fes.med=rep(NA_integer_, rows),
                       total.fes.max=rep(NA_integer_, rows),
-                      total.fes.sd=rep(NA_real_, rows));
+                      total.fes.sd=rep(NA_real_, rows),
+                      total.time.min=rep(NA_integer_, rows),
+                      total.time.mean=rep(NA_integer_, rows),
+                      total.time.med=rep(NA_real_, rows),
+                      total.time.max=rep(NA_integer_, rows),
+                      total.time.sd=rep(NA_real_, rows),
+                      budget.fes=rep(NA_integer_, rows),
+                      budget.time=rep(NA_integer_, rows));
 
   frame <- force(frame);
   cols.out <- colnames(frame);
@@ -154,193 +166,298 @@ load.algorithm <- function(algorithm.row) {
     frame[col] <- unname(unlist(algorithm.data[col]));
   }
 
-  logger("sanity-checking algorithm '", algorithm, "'.");
-  stopifnot(all(frame$inst.jobs > 0L),
-            all(frame$inst.machines > 0L),
-            all(frame$inst.opt.bound.upper > 0L),
-            all(frame$inst.opt.bound.lower > 0L),
-            all(frame$inst.opt.bound.lower <= frame$inst.opt.bound.upper),
-            all(is.finite(frame$inst.jobs)),
-            all(is.integer(frame$inst.jobs)),
-            all(is.finite(frame$inst.machines)),
-            all(is.integer(frame$inst.machines)),
-            all(is.finite(frame$inst.opt.bound.lower)),
-            all(is.integer(frame$inst.opt.bound.lower)),
-            all(is.finite(frame$inst.opt.bound.upper)),
-            all(is.integer(frame$inst.opt.bound.upper)));
+  main.loop <- TRUE;
+  while(main.loop) {
+    main.loop <- FALSE;
 
-  cols.int <- c("n.runs",
-                "best.f.min",
-                "best.f.max",
-                "last.improvement.time.min",
-                "last.improvement.time.max",
-                "total.time.min",
-                "total.time.max",
-                "last.improvement.fes.min",
-                "last.improvement.fes.max",
-                "total.fes.min",
-                "total.fes.max");
-  cols.real<- c("best.f.mean",
-                "best.f.med",
-                "best.f.sd",
-                "last.improvement.time.mean",
-                "last.improvement.time.med",
-                "last.improvement.time.sd",
-                "total.time.mean",
-                "total.time.med",
-                "total.time.sd",
-                "last.improvement.fes.mean",
-                "last.improvement.fes.med",
-                "last.improvement.fes.sd",
-                "total.fes.mean",
-                "total.fes.med",
-                "total.fes.sd");
-  for(col in cols.real) {
-    if(col %in% cols.in) {
-      cc <- unlist(frame[col]);
-      stopifnot(all(is.numeric(cc) | is.integer(cc)),
-                all(is.finite(cc)),
-                all(cc>= 0),
-                all(!is.na(cc)));
-    }
-  }
-  for(col in cols.int) {
-    if(col %in% cols.in) {
-      cc <- unlist(frame[col]);
-      stopifnot(all(is.integer(cc)),
-                all(is.finite(cc)),
-                all(cc>= 0),
-                all(!is.na(cc)));
-    }
-  }
+    logger("sanity-checking algorithm '", algorithm, "'.");
+    stopifnot(all(frame$inst.jobs > 0L),
+              all(frame$inst.machines > 0L),
+              all(frame$inst.opt.bound.upper > 0L),
+              all(frame$inst.opt.bound.lower > 0L),
+              all(frame$inst.opt.bound.lower <= frame$inst.opt.bound.upper),
+              all(is.finite(frame$inst.jobs)),
+              all(is.integer(frame$inst.jobs)),
+              all(is.finite(frame$inst.machines)),
+              all(is.integer(frame$inst.machines)),
+              all(is.finite(frame$inst.opt.bound.lower)),
+              all(is.integer(frame$inst.opt.bound.lower)),
+              all(is.finite(frame$inst.opt.bound.upper)),
+              all(is.integer(frame$inst.opt.bound.upper)));
 
-  # check soundness of column groups
-  # auto-insert values if possible
-  for(choice in c("best.f", "last.improvement.time", "last.improvement.fes",
-                  "total.time", "total.fes")) {
-    col.min <- paste0(choice, ".min");
-    col.mean <- paste0(choice, ".mean");
-    col.med <- paste0(choice, ".med");
-    col.max <- paste0(choice, ".max");
-    col.sd <- paste0(choice, ".sd");
-
-    should.repeat <- TRUE;
-    while(should.repeat) {
-      logger("checking data in group '", choice, "' for algorithm '", algorithm, "'.");
-      should.repeat <- FALSE;
-      if(col.min %in% cols.in) {
-
-        if(col.mean %in% cols.in) {
-          stopifnot(all(frame[col.mean] >= frame[col.min]));
-        }
-        if(col.med %in% cols.in) {
-          stopifnot(all(frame[col.med] >= frame[col.min]));
-        }
+    cols.int <- c("n.runs",
+                  "best.f.min",
+                  "best.f.max",
+                  "last.improvement.time.min",
+                  "last.improvement.time.max",
+                  "total.time.min",
+                  "total.time.max",
+                  "last.improvement.fes.min",
+                  "last.improvement.fes.max",
+                  "total.fes.min",
+                  "total.fes.max",
+                  "reach.best.f.min.fes.min",
+                  "reach.best.f.min.fes.max",
+                  "reach.best.f.min.time.min",
+                  "reach.best.f.min.time.max",
+                  "budget.fes",
+                  "budget.time");
+    cols.real<- c("best.f.mean",
+                  "best.f.med",
+                  "best.f.sd",
+                  "last.improvement.time.mean",
+                  "last.improvement.time.med",
+                  "last.improvement.time.sd",
+                  "reach.best.f.min.fes.mean",
+                  "reach.best.f.min.fes.med",
+                  "reach.best.f.min.fes.sd",
+                  "reach.best.f.min.time.mean",
+                  "reach.best.f.min.time.med",
+                  "reach.best.f.min.time.msd",
+                  "total.time.mean",
+                  "total.time.med",
+                  "total.time.sd",
+                  "last.improvement.fes.mean",
+                  "last.improvement.fes.med",
+                  "last.improvement.fes.sd",
+                  "total.fes.mean",
+                  "total.fes.med",
+                  "total.fes.sd");
+    for(col in cols.real) {
+      if(col %in% cols.in) {
+        cc <- unlist(frame[col]);
+        stopifnot(all(is.numeric(cc) | is.integer(cc)),
+                  all(is.finite(cc)),
+                  all(cc>= 0),
+                  all(!is.na(cc)));
       }
-      if(col.max %in% cols.in) {
-        if(col.mean %in% cols.in) {
-          stopifnot(all(frame[col.mean] <= frame[col.max]));
-        }
-        if(col.med %in% cols.in) {
-          stopifnot(all(frame[col.med] <= frame[col.max]));
-        }
-        if(col.min %in% cols.in) {
-          stopifnot(all(frame[col.max] >= frame[col.min]));
+    }
+    for(col in cols.int) {
+      if(col %in% cols.in) {
+        cc <- unlist(frame[col]);
+        stopifnot(all(is.integer(cc)),
+                  all(is.finite(cc)),
+                  all(cc>= 0),
+                  all(!is.na(cc)));
+      }
+    }
 
-          same <- (frame[col.min] == frame[col.max]);
-          same[is.na(same)] <- FALSE;
-
-          if(any(same)) {
-            if(!(col.mean %in% cols.in)) {
-              old <- frame[col.mean][same];
-              frame[col.mean][same] <- frame[col.min][same];
-              frame <- force(frame);
-              if(!(identical(old, frame[col.mean][same]))) {
-                should.repeat <- TRUE;
-                should.repeat <- force(should.repeat);
-                logger("added values for ", col.mean, " since ",
-                       col.min, "==", col.max, " for algorithm '",
-                       algorithm);
-              }
-            }
-            if(!(col.med %in% cols.in)) {
-              old <- frame[col.med][same];
-              frame[col.med][same] <- frame[col.min][same];
-              frame <- force(frame);
-              if(!(identical(old, frame[col.med][same]))) {
-                should.repeat <- TRUE;
-                should.repeat <- force(should.repeat);
-                logger("added values for ", col.med, " since ",
-                       col.min, "==", col.max, " for algorithm '",
-                       algorithm);
-              }
-            }
-            if(col.sd %in% cols.in) {
-              stopifnot(frame[col.sd][same] == 0,
-                        frame[col.sd][!same] > 0);
+    # propagate budget, if needed
+    if("budget.fes" %in% cols.in) {
+      if("total.fes.max" %in% cols.in) {
+        stopifnot(all(frame$total.fes.max <= frame$budget.fes));
+      } else {
+        if("total.fes.min" %in% cols.in) {
+          stopifnot(all(frame$total.fes.min <= frame$budget.fes));
+        } else {
+          if("total.fes.mean" %in% cols.in) {
+            stopifnot(all(frame$total.fes.mean <= frame$budget.fes));
+          } else {
+            if("total.fes.med" %in% cols.in) {
+              stopifnot(all(frame$total.fes.med <= frame$budget.fes));
             } else {
-              old <- frame[col.sd][same];
-              frame[col.sd][same] <- 0L;
-              frame <- force(frame);
-              if(!(identical(old, frame[col.sd][same]))) {
-                should.repeat <- TRUE;
-                should.repeat <- force(should.repeat);
-                logger("added values for ", col.sd, " since ",
-                       col.min, "==", col.max, " for algorithm '",
-                       algorithm);
+              if(!("total.fes.sd" %in% cols.in)) {
+                frame$total.fes.max <- frame$budget.fes;
+                frame$total.fes.min <- frame$budget.fes;
+                cols.in <- c(cols.in, "total.fes.max", "total.fes.min");
+                logger("expanded fes budget to total fes for algorithm '", algorithm, "'.");
+                frame <- force(frame);
+                main.loop <- TRUE;
+                main.loop <- force(main.loop);
               }
             }
           }
         }
       }
-      if(col.sd %in% cols.in) {
-        same <- (frame[col.sd] <= 0);
-        if( (col.min %in% cols.in) && (col.max %in% cols.in)) {
-          stopifnot(all(frame[col.min][same] == frame[col.max][same]),
-                        all(frame[col.min][!same] < frame[col.max][!same]));
+    }
+    if("budget.time" %in% cols.in) {
+      if("total.time.max" %in% cols.in) {
+        stopifnot(all(frame$total.time.max <= frame$budget.time));
+      } else {
+        if("total.time.min" %in% cols.in) {
+          stopifnot(all(frame$total.time.min <= frame$budget.time));
+        } else {
+          if("total.time.mean" %in% cols.in) {
+            stopifnot(all(frame$total.time.mean <= frame$budget.time));
+          } else {
+            if("total.time.med" %in% cols.in) {
+              stopifnot(all(frame$total.time.med <= frame$budget.time));
+            } else {
+              if(!("total.time.sd" %in% cols.in)) {
+                frame$total.time.max <- frame$budget.time;
+                frame$total.time.min <- frame$budget.time;
+                cols.in <- c(cols.in, "total.time.max", "total.time.min");
+                logger("expanded fes budget to total fes for algorithm '", algorithm, "'.");
+                frame <- force(frame);
+                main.loop <- TRUE;
+                main.loop <- force(main.loop);
+              }
+            }
+          }
         }
-        if(any(same)) {
-          col.exp <- c(col.min, col.max, col.mean, col.med);
-          for(col.a in col.exp) {
-            if(col.a %in% cols.in) {
-              for(col.b in col.exp) {
-                if(col.b %in% cols.in) {
-                  stopifnot(all(frame[col.a][same] == frame[col.b][same]));
-                } else {
-                  old <- frame[col.b][same];
-                  frame[col.b][same] <- frame[col.a][same];
-                  frame <- force(frame);
-                  if(!identical(old, frame[col.b][same])) {
-                    should.repeat <- TRUE;
-                    should.repeat <- force(should.repeat);
-                    logger("added values for ", col.b, " from ", col.a,
-                           " since ",
-                           col.sd, "==0 for algorithm '",
-                           algorithm);
+      }
+    }
+
+    # check soundness of column groups
+    # auto-insert values if possible
+    for(choice in c("best.f", "last.improvement.time", "last.improvement.fes",
+                    "total.time", "total.fes", "reach.best.f.min.fes",
+                    "reach.best.f.min.time")) {
+      col.min <- paste0(choice, ".min");
+      col.mean <- paste0(choice, ".mean");
+      col.med <- paste0(choice, ".med");
+      col.max <- paste0(choice, ".max");
+      col.sd <- paste0(choice, ".sd");
+
+      should.repeat <- TRUE;
+      while(should.repeat) {
+        logger("checking data in group '", choice, "' for algorithm '", algorithm, "'.");
+        should.repeat <- FALSE;
+        if(col.min %in% cols.in) {
+
+          if(col.mean %in% cols.in) {
+            stopifnot(all(frame[col.mean] >= frame[col.min]));
+          }
+          if(col.med %in% cols.in) {
+            stopifnot(all(frame[col.med] >= frame[col.min]));
+          }
+        }
+        if(col.max %in% cols.in) {
+          if(col.mean %in% cols.in) {
+            stopifnot(all(frame[col.mean] <= frame[col.max]));
+          }
+          if(col.med %in% cols.in) {
+            stopifnot(all(frame[col.med] <= frame[col.max]));
+          }
+          if(col.min %in% cols.in) {
+            stopifnot(all(frame[col.max] >= frame[col.min]));
+
+            same <- (frame[col.min] == frame[col.max]);
+            same[is.na(same)] <- FALSE;
+
+            if(any(same)) {
+              if(!(col.mean %in% cols.in)) {
+                old <- frame[col.mean][same];
+                frame[col.mean][same] <- frame[col.min][same];
+                frame <- force(frame);
+                if(!(identical(old, frame[col.mean][same]))) {
+                  should.repeat <- TRUE;
+                  should.repeat <- force(should.repeat);
+                  logger("added values for ", col.mean, " since ",
+                         col.min, "==", col.max, " for algorithm '",
+                         algorithm);
+                }
+              }
+              if(!(col.med %in% cols.in)) {
+                old <- frame[col.med][same];
+                frame[col.med][same] <- frame[col.min][same];
+                frame <- force(frame);
+                if(!(identical(old, frame[col.med][same]))) {
+                  should.repeat <- TRUE;
+                  should.repeat <- force(should.repeat);
+                  logger("added values for ", col.med, " since ",
+                         col.min, "==", col.max, " for algorithm '",
+                         algorithm);
+                }
+              }
+              if(col.sd %in% cols.in) {
+                stopifnot(frame[col.sd][same] == 0,
+                          frame[col.sd][!same] > 0);
+              } else {
+                old <- frame[col.sd][same];
+                frame[col.sd][same] <- 0L;
+                frame <- force(frame);
+                if(!(identical(old, frame[col.sd][same]))) {
+                  should.repeat <- TRUE;
+                  should.repeat <- force(should.repeat);
+                  logger("added values for ", col.sd, " since ",
+                         col.min, "==", col.max, " for algorithm '",
+                         algorithm);
+                }
+              }
+            }
+          }
+        }
+        if(col.sd %in% cols.in) {
+          same <- (frame[col.sd] <= 0);
+          if( (col.min %in% cols.in) && (col.max %in% cols.in)) {
+            stopifnot(all(frame[col.min][same] == frame[col.max][same]),
+                          all(frame[col.min][!same] < frame[col.max][!same]));
+          }
+          if(any(same)) {
+            col.exp <- c(col.min, col.max, col.mean, col.med);
+            for(col.a in col.exp) {
+              if(col.a %in% cols.in) {
+                for(col.b in col.exp) {
+                  if(col.b %in% cols.in) {
+                    stopifnot(all(frame[col.a][same] == frame[col.b][same]));
+                  } else {
+                    old <- frame[col.b][same];
+                    frame[col.b][same] <- frame[col.a][same];
+                    frame <- force(frame);
+                    if(!identical(old, frame[col.b][same])) {
+                      should.repeat <- TRUE;
+                      should.repeat <- force(should.repeat);
+                      logger("added values for ", col.b, " from ", col.a,
+                             " since ",
+                             col.sd, "==0 for algorithm '",
+                             algorithm);
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
 
-      if(should.repeat) {
-        logger("data in column group '", choice, "' for algorithm '",
-               algorithm, "' was artificially expanded, repeating sanity check.");
+        if(should.repeat) {
+          logger("data in column group '", choice, "' for algorithm '",
+                 algorithm, "' was artificially expanded, repeating sanity check.");
+        }
       }
     }
-  }
-  frame <- force(frame);
+    frame <- force(frame);
 
-# sanity check against bounds
-  for(choice in c("best.f.min", "best.f.mean", "best.f.med", "best.f.max")) {
-    if(choice %in% cols.in) {
-      stopifnot(frame[choice] >= frame$inst.opt.bound.lower,
-                frame[choice] >= frame$inst.opt.bound.upper);
+  # sanity checks against limits
+    cols.pairs.1 <- list(list("min", c("min", "med", "mean", "max")),
+                         list("mean", c("mean", "max")),
+                         list("med", c("med", "max")),
+                         c("max", "max"));
+    cols.pairs.2 <- list(list("min", c("min", "max")),
+                         c("mean", "max"),
+                         c("med", "max"),
+                         c("max", "max"));
+
+    for(choice in list( list("last.improvement.time", "total.time", cols.pairs.1, "budget.time"),
+                        list("last.improvement.fes",  "total.fes", cols.pairs.1, "budget.time"),
+                        list("reach.best.f.min.fes", "total.fes", cols.pairs.2, "budget.fes"),
+                        list("reach.best.f.min.time", "total.time", cols.pairs.2, "budget.fes"))) {
+      for(suffix in choice[[3L]]) {
+        col.a <- paste0(choice[[1L]], ".", suffix[[1L]]);
+        stopifnot(all(frame[col.a] <= frame[choice[[4L]]], na.rm = TRUE));
+        for(suffix.2 in suffix[[2L]]) {
+          col.b <- paste0(choice[[2L]], ".", suffix.2);
+          stopifnot(all(frame[col.a] <= frame[col.b], na.rm = TRUE));
+        }
+      }
+    }
+    rm("cols.pairs.1");
+    rm("cols.pairs.2");
+    rm("col.a");
+    rm("col.b");
+
+  # sanity check against bounds
+    for(choice in c("best.f.min", "best.f.mean", "best.f.med", "best.f.max")) {
+      if(choice %in% cols.in) {
+        stopifnot(all(frame[choice] >= frame$inst.opt.bound.lower),
+                  all(frame[choice] >= frame$inst.opt.bound.upper));
+      }
+    }
+
+    if(main.loop) {
+      logger("cycling again through the main loop.");
     }
   }
-
 
   logger("finished loading and processing data for algorithm '", algorithm, "'.");
   frame <- force(frame);
@@ -402,6 +519,15 @@ rownames(jsspRelatedWorkResults) <- NULL;
 jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
 jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
 
+logger("cleaning up data frame from all 'always-NA' columns.");
+for(col in seq.int(from=ncol(jsspRelatedWorkResults), to=1L)) {
+  if(all(is.na(jsspRelatedWorkResults[, col]))) {
+    logger("deleting column '", colnames(jsspRelatedWorkResults)[[col]], "', since all values are NA.");
+    jsspRelatedWorkResults <- jsspRelatedWorkResults[, -col];
+    jsspRelatedWorkResults <- force(jsspRelatedWorkResults);
+  }
+}
+logger("remaining columns are: ", paste(colnames(jsspRelatedWorkResults), sep=", ", collapse=", "), ".");
 
 logger("completed construction of JSSP related work dataset, now building documentation (this needs LaTeX.")
 
@@ -575,6 +701,7 @@ rm("b1");
 rm("b2");
 rm("template.1");
 rm("template.2");
+rm("bibliography");
 
 
 
