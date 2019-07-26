@@ -24,6 +24,10 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   2010. [Online]. Available:
   \url{http://www.scirp.org/journal/paperinformation.aspx?paperid=3561}
   
+  L. Asadzadeh, "A local search genetic algorithm for the job shop scheduling
+  problem with intelligent agents," \emph{{Computers {\&} Industrial
+  Engineering}}, vol. 85, pp. 376--383, Jul. 2015.
+  
   R. F. Abdel{-}Kader, "An improved {PSO} algorithm with genetic and
   neighborhood-based diversity operators for the job shop scheduling problem,"
   \emph{{Applied Artificial Intelligence -- An International Journal}},
@@ -47,14 +51,14 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   Computing}}, vol. 23, no. 1, pp. 1--14, 2011. [Online]. Available:
   \url{http://cfwebprod.sandia.gov/cfdocs/CompResearch/docs/ists-sgmpcs.pdf}
   
-  M. A. Cruz{-}Ch{\'a}vez, M. H. {Cruz Rosales}, J. C. Zavala{-}D{\'i}az,
-  J. A. H. Aguilar, A. Rodriguez{-}Le{\'o}, J. C. P. Avelino, M. E. L.
+  M. A. Cruz{-}Ch{a}vez, M. H. {Cruz Rosales}, J. C. Zavala{-}D{i}az,
+  J. A. H. Aguilar, A. Rodriguez{-}Le{o}, J. C. P. Avelino, M. E. L.
   Orziz, and O. H. Salinas, "Hybrid micro genetic multi-population algorithm
   with collective communication for the job shop scheduling problem,"
-  \emph{{{IEEE} Access}}, vol. 7, pp. 82\,358--82\,376, Jun. 2019. [Online].
+  \emph{{{IEEE} Access}}, vol. 7, pp. 82358--82376, Jun. 2019. [Online].
   Available: \url{http://ieeexplore.ieee.org/document/8743353}
   
-  T. C. E. Cheng, B. Peng, and Z. L{\"{u}}, "A hybrid evolutionary algorithm to
+  T. C. E. Cheng, B. Peng, and Z. L{{u}}, "A hybrid evolutionary algorithm to
   solve the job shop scheduling problem," \emph{{Annals of Operations
   Research}}, vol. 242, no. 2, pp. 223--237, Jul. 2016.
   
@@ -62,9 +66,20 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   makespan in job shop scheduling problems," \emph{{Journal of Intelligent
   Manufacturing}}, vol. 29, no. 2, pp. 451--462, Feb. 2018.
   
-  L. Hern{\'a}ndez{-}Ram{\'i}rez, J. F. Solis, G. Castilla-Valdez, J. J.
-  Gonz{\'a}lez{-}Barbosa, D. Ter{\'a}n{-}Villanueva, and M. L.
-  Morales{-}Rodr{\'i}guez, "A hybrid simulated annealing for job shop
+  L. Gao, X. Li, X. Wen, C. Lu, and F. Wen, "A hybrid algorithm based on a new
+  neighborhood structure evaluation method for job shop scheduling problem,"
+  \emph{{Computers {\&} Industrial Engineering}}, vol. 88, pp. 417--429, Oct.
+  2015.
+  
+  J. F. Gon{{c}}alves and M. G. C. Resende, "An extended {Akers} graphical
+  method with a biased random-key genetic algorithm for job-shop scheduling,"
+  \emph{{International Transactions on Operational Research ({ITOR})}},
+  vol. 21, no. 2, pp. 215--246, Mar. 2014. [Online]. Available:
+  \url{http://mauricio.resende.info/doc/brkga-jss2011.pdf}
+  
+  L. Hern{a}ndez{-}Ram{i}rez, J. F. Solis, G. Castilla-Valdez, J. J.
+  Gonz{a}lez{-}Barbosa, D. Ter{a}n{-}Villanueva, and M. L.
+  Morales{-}Rodr{i}guez, "A hybrid simulated annealing for job shop
   scheduling problem," \emph{{International Journal of Combinatorial
   Optimization Problems and Informatics ({IJCOPI})}}, vol. 10, no. 1, pp.
   6--15, Jan.--Apr. 2019, published 2018-08-10. [Online]. Available:
@@ -78,8 +93,12 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   
   T. Jiang and C. Zhang, "Application of grey wolf optimization for solving
   combinatorial problems: {J}ob shop and flexible job shop scheduling cases,"
-  \emph{{{IEEE} Access}}, vol. 6, pp. 26\,231--26\,240, May 2018. [Online].
+  \emph{{{IEEE} Access}}, vol. 6, pp. 26231--26240, May 2018. [Online].
   Available: \url{http://ieeexplore.ieee.org/document/8355479}
+  
+  M. Kurdi, "A new hybrid island model genetic algorithm for job shop scheduling
+  problem," \emph{{Computers {\&} Industrial Engineering}}, vol. 88, pp.
+  273--283, Oct. 2015.
   
   L. Li, W. Weng, and S. Fujimura, "An improved teaching-learning-based
   optimization algorithm to solve job shop scheduling problems," in \emph{16th
@@ -88,16 +107,22 @@ T. F. Abdelmaguid, "Representations in genetic algorithm for the job shop
   S. Xu, Eds. {IEEE} Computer Society,
   2017, pp. 797--801.
   
-  J. Miller{-}Todd, K. Steinh{\"{o}}fel, and P. Veenstra, "Firefly-inspired
+  J. Miller{-}Todd, K. Steinh{{o}}fel, and P. Veenstra, "Firefly-inspired
   algorithm for job shop scheduling," in \emph{Adventures Between Lower Bounds
   and Higher Altitudes -- Essays Dedicated to Juraj Hromkovi{{c}} on the
   Occasion of His 60th Birthday}, ser. {Lecture Notes in Computer Science
-  ({LNCS})}, H. B{\"{o}}ckenhauer, D. Komm, and W. Unger, Eds. Springer, 2018, vol. 11011, pp. 423--433.
+  ({LNCS})}, H. B{{o}}ckenhauer, D. Komm, and W. Unger, Eds. Springer, 2018, vol. 11011, pp. 423--433.
   
   P. Pongchairerks, "A two-level metaheuristic algorithm for the job-shop
   scheduling problem," \emph{{Complexity}}, vol. 2019, pp. 1--11, 2019.
   [Online]. Available:
   \url{http://www.hindawi.com/journals/complexity/2019/8683472/}
+  
+  B. Peng, Z. L{u}, and T. C. E. Cheng, "A tabu search/path relinking
+  algorithm to solve the job shop scheduling problem," \emph{{Computers {\&}
+  Operations Research}}, vol. 53, pp. 154--164, Jan. 2015, a Feb. 2014 preprint
+  is available as arXiv:1402.5613v1 [cs.DS]. [Online]. Available:
+  \url{http://arxiv.org/abs/1402.5613}
   
   N. Sharma, H. Sharma, and A. Sharma, "Beer froth artificial bee colony
   algorithm for job-shop scheduling problem," \emph{{Applied Soft Computing

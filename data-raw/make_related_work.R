@@ -227,18 +227,18 @@ load.algorithm <- function(algorithm.row) {
       if(col %in% cols.in) {
         cc <- unlist(frame[col]);
         stopifnot(all(is.numeric(cc) | is.integer(cc)),
-                  all(is.finite(cc)),
-                  all(cc>= 0),
-                  all(!is.na(cc)));
+                  all(is.na(cc) | is.finite(cc)),
+                  all(is.na(cc) | (cc >= 0L)));
+                  #all(!is.na(cc)));
       }
     }
     for(col in cols.int) {
       if(col %in% cols.in) {
         cc <- unlist(frame[col]);
         stopifnot(all(is.integer(cc)),
-                  all(is.finite(cc)),
-                  all(cc>= 0),
-                  all(!is.na(cc)));
+                  all(is.na(cc) | is.finite(cc)),
+                  all(is.na(cc) | (cc >= 0)));
+                  #all(!is.na(cc)));
       }
     }
 
@@ -272,20 +272,21 @@ load.algorithm <- function(algorithm.row) {
     }
     if("budget.time" %in% cols.in) {
       if("total.time.max" %in% cols.in) {
-        stopifnot(all(frame$total.time.max <= frame$budget.time));
+        stopifnot(all(frame$total.time.max <= frame$budget.time, na.rm=TRUE));
       } else {
         if("total.time.min" %in% cols.in) {
-          stopifnot(all(frame$total.time.min <= frame$budget.time));
+          stopifnot(all(frame$total.time.min <= frame$budget.time, na.rm=TRUE));
         } else {
           if("total.time.mean" %in% cols.in) {
-            stopifnot(all(frame$total.time.mean <= frame$budget.time));
+            stopifnot(all(frame$total.time.mean <= frame$budget.time, na.rm=TRUE));
           } else {
             if("total.time.med" %in% cols.in) {
-              stopifnot(all(frame$total.time.med <= frame$budget.time));
+              stopifnot(all(frame$total.time.med <= frame$budget.time, na.rm=TRUE));
             } else {
               if(!("total.time.sd" %in% cols.in)) {
-                frame$total.time.max <- frame$budget.time;
-                frame$total.time.min <- frame$budget.time;
+                sel <- (!(is.na(frame$budget.time)));
+                frame$total.time.max[sel] <- frame$budget.time[sel];
+                frame$total.time.min[sel] <- frame$budget.time[sel];
                 cols.in <- c(cols.in, "total.time.max", "total.time.min");
                 logger("expanded fes budget to total fes for algorithm '", algorithm, "'.");
                 frame <- force(frame);
@@ -330,7 +331,7 @@ load.algorithm <- function(algorithm.row) {
             stopifnot(all(frame[col.med] <= frame[col.max]));
           }
           if(col.min %in% cols.in) {
-            stopifnot(all(frame[col.max] >= frame[col.min]));
+            stopifnot(all(frame[col.max] >= frame[col.min], na.rm=TRUE));
 
             same <- (frame[col.min] == frame[col.max]);
             same[is.na(same)] <- FALSE;
@@ -653,6 +654,10 @@ bibliography <- force(bibliography);
 bibliography <- gsub("''", '"', bibliography, fixed=TRUE);
 bibliography <- force(bibliography);
 bibliography <- gsub("{\\v{", '{{', bibliography, fixed=TRUE);
+bibliography <- gsub("{\\c{", '{{', bibliography, fixed=TRUE);
+bibliography <- gsub("\\'", '', bibliography, fixed=TRUE);
+bibliography <- gsub('\\"', '', bibliography, fixed=TRUE);
+bibliography <- gsub('\\,', '', bibliography, fixed=TRUE);
 bibliography <- force(bibliography);
 bibliography <- gsub("{\\i}", 'i', bibliography, fixed=TRUE);
 bibliography <- force(bibliography);
