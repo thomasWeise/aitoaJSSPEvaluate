@@ -358,13 +358,13 @@ aitoa.end.results.frame <- function(config=aitoa.config()) {
             all(xor(is.na(result$reached.opt.bound.upper.fes), result$reached.opt.bound.upper)),
             all(xor(is.na(result$reached.opt.bound.upper.time), result$reached.opt.bound.upper)),
 
-            all(is.integer(result$reached.opt.bound.upper.f)),
+            all(xor(is.na(result$reached.opt.bound.upper.f), is.integer(result$reached.opt.bound.upper.f))),
             all((result$reached.opt.bound.upper.f > 0L) | is.na(result$reached.opt.bound.upper.f)),
 
-            all(is.integer(result$reached.opt.bound.upper.fes)),
+            all(xor(is.na(result$reached.opt.bound.upper.fes), is.integer(result$reached.opt.bound.upper.fes))),
             all((result$reached.opt.bound.upper.fes > 0L) | is.na(result$reached.opt.bound.upper.fes)),
 
-            all(is.integer(result$reached.opt.bound.upper.time)),
+            all(xor(is.na(result$reached.opt.bound.upper.time), is.integer(result$reached.opt.bound.upper.time))),
             all((result$reached.opt.bound.upper.time >= 0L) | is.na(result$reached.opt.bound.upper.time)),
 
             all( (!result$reached.opt.bound.lower) | (result$reached.opt.bound.upper.time <= result$last.improvement.time)),

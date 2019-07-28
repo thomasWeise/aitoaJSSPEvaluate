@@ -22,6 +22,10 @@ dir.results <- normalizePath(dir.results, mustWork = TRUE);
 stopifnot(dir.exists(dir.results));
 
 dir.evaluation <- file.path(dir.results, "..", "evaluation");
+dir.evaluation <- normalizePath(dir.evaluation, mustWork = FALSE);
+if(!(dir.exists(dir.evaluation))) {
+  dir.create(dir.evaluation, showWarnings = TRUE, recursive = TRUE);
+}
 dir.evaluation <- normalizePath(dir.evaluation, mustWork = TRUE);
 stopifnot(dir.exists(dir.evaluation));
 
