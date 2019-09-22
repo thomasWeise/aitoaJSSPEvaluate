@@ -11,7 +11,7 @@ aitoa.instance.features.frame(config = aitoa.config())
 }
 \value{
 a data frame with the instance features, formatted exactly as
-  \link{jsspInstances}
+  \code{jsspInstancesAndResults::jssp.instances}
 }
 \description{
 Obtain a data frame which will contain the features of all

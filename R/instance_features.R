@@ -4,7 +4,7 @@
 #'   instances used in the experiment.
 #' @param config the configuration
 #' @return a data frame with the instance features, formatted exactly as
-#'   \link{jsspInstances}
+#'   \code{jsspInstancesAndResults::jssp.instances}
 #' @include utils.R
 #' @include config.R
 #' @export aitoa.instance.features.frame
