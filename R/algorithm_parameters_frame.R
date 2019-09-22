@@ -18,7 +18,7 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
   if(!file.exists(file)) {
     config$logger("algorithm parameters file '", file, "' does not yet exist, so we need to create it.");
 
-    algorithms <- as.character(unique(aitoa.setups.frame(config)$algorithm));
+    algorithms <- as.character(unique(aitoa.setups.frame(config)$algo.id));
     n <- length(algorithms);
     stopifnot(n > 0L);
 
@@ -33,7 +33,7 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
     names <- unique(unname(unlist(names)));
     stopifnot(length(names) >= 2L);
     names <- names[order(vapply(names, function(nn) which(nn==.algo.param.seq)[[1L]], 0L))];
-    names <- c("algo.setup", names);
+    names <- c("algo.id", names);
 
     config$logger(paste0("found the following parameters: ", paste(names), "; now building frame"));
 
@@ -56,7 +56,7 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
     stopifnot(ncol(parameters) > 0L,
               nrow(parameters) > 0L,
               nrow(parameters) == n,
-              length(parameters$algo.setup) == n);
+              length(parameters$algo.id) == n);
 
     srt <- c("algo.algorithm", "algo.name", names);
     srt <- unique(srt);
@@ -68,7 +68,7 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
     stopifnot(ncol(parameters) > 0L,
               nrow(parameters) > 0L,
               nrow(parameters) == n,
-              length(parameters$algo.setup) == n);
+              length(parameters$algo.id) == n);
 
     names <- parameters$algo.name[!is.na(parameters$algo.name)];
     stopifnot(length(names) == length(unique(names)));
@@ -94,10 +94,10 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
   result <- force(result);
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
-            colnames(result)[1L:3L] == c("algo.setup",
+            colnames(result)[1L:3L] == c("algo.id",
                                          "algo.name",
                                          "algo.algorithm"),
-            all(is.factor(result$algo.setup)),
+            all(is.factor(result$algo.id)),
             all(is.factor(result$algo.name)),
             all(is.factor(result$algo.algorithm)));
   config$logger("done loading algorithm setups from file '", file, "'.");

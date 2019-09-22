@@ -8,7 +8,7 @@
 aitoa.config(dir.results = "./results",
   dir.evaluation = "./evaluation", logger = .logger,
   min.instances = 4L, min.runs = 101L, graphics.ext = "svg",
-  instance.features = function() get(data("jsspInstances")))
+  instance.features = function() jsspInstancesAndResults::jssp.instances)
 }
 \arguments{
 \item{dir.results}{the directory where the results are expected}
@@ -26,7 +26,7 @@ written to}
 
 \item{instance.features}{a function which can be called and will return a
 data frame with the names and features of instances, which must be
-formatted exactly as documented in \link{jsspInstances}}
+formatted exactly as documented in \code{jsspInstancesAndResults::jssp.instances}}
 }
 \value{
 the configuration object

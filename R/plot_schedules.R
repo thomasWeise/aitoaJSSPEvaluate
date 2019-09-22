@@ -78,7 +78,7 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
             ncol(frame) > 0L);
 
 
-  setups <- unique(unname(unlist(frame$algorithm)));
+  setups <- unique(unname(unlist(frame$algo.id)));
   stopifnot(length(setups) > 0L);
   names <- .get.setup.names(setups, config);
   stopifnot(length(names) == length(setups));
@@ -110,10 +110,10 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
     name <- names[[i]];
     stopifnot(!is.null(name), !is.na(name));
 
-    frame.setup <- frame[frame$algorithm == setup,];
+    frame.setup <- frame[frame$algo.id == setup,];
     stopifnot(nrow(frame.setup) > 0L);
 
-    instances <- sort(unname(unlist(frame.setup$instance)));
+    instances <- sort(unname(unlist(frame.setup$inst.id)));
     length.instances <- length(instances);
     stopifnot(length.instances > 0L, length.instances == length(unique(instances)));
     config$logger("found ", length.instances, " instances for setup ", setup);
@@ -145,11 +145,11 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
                              p1 <- par(cex=0.78, mar=mar);
                              p2 <- par(mfrow=c(length(instances), 1L));
                              for(instance in instances) {
-                               sel <- (frame.setup$instance == instance);
+                               sel <- (frame.setup$inst.id == instance);
                                stopifnot(sum(sel) == 1L);
                                sel <- which(sel);
                                stopifnot(length(sel) == 1L);
-                               m <- (features$inst.name == instance);
+                               m <- (features$inst.id == instance);
                                stopifnot(sum(m) == 1L);
                                m <- which(m);
                                stopifnot(length(m) == 1L);

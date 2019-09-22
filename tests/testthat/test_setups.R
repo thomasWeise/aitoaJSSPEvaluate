@@ -7,7 +7,7 @@ context("aitoa.setups.frame");
   writeLines(text=c(
     "",
     "# ALGORITHM_SETUP",
-    "algorithm: rs",
+    "algo.id: rs",
     "algorithm_class: aitoa.algorithms.RandomSampling",
     "# END_ALGORITHM_SETUP",
     "",
@@ -132,11 +132,11 @@ test_that("Test aitoa.setups.frame", {
   }
 
   setups <- aitoa.setups.frame(config=config);
-  expect_identical(unique(as.character(setups$algorithm)),
+  expect_identical(unique(as.character(setups$algo.id)),
                    c("a", "b", "c", "x"));
 
 
-  expect_identical(unique(as.character(setups$instance)),
+  expect_identical(unique(as.character(setups$inst.id)),
                    c("1", "2", "3"));
 
   expect_identical(unique(as.character(setups$dir)),

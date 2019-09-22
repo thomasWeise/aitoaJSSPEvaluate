@@ -9,6 +9,7 @@ License: GPL-3
 Encoding: UTF-8
 Imports: graphics (>= 3.5.2),
          grDevices (>= 3.5.2),
+         jsspInstancesAndResults (>= 0.8.0),
          plotteR (>= 0.8.13),
          stats (>= 3.5.2),
          tseries (>= 0.10.47),
@@ -20,7 +21,8 @@ Suggests: devtools (>= 2.0.2),
 Depends: R (>= 3.5.0)
 ByteCompile: true
 LazyData: true
-Remotes: github::thomasWeise/plotteR
+Remotes: github::thomasWeise/jsspInstancesAndResults,
+         github::thomasWeise/plotteR
 RoxygenNote: 6.1.1
 Collate: 
     'algorithm_parameters.R'
@@ -28,8 +30,6 @@ Collate:
     'utils.R'
     'setups.R'
     'algorithm_parameters_frame.R'
-    'data_jsspInstances.R'
-    'data_jsspRelatedWorkResults.R'
     'instance_features.R'
     'load_log_file.R'
     'end_results.R'

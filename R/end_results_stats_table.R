@@ -25,7 +25,7 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
   names.name <- names.name[pick];
   stopifnot(length(names.name) > 0L,
             all(nchar(names.name) > 0L));
-  names.setup <- as.character(unname(unlist(names$algo.setup)))[pick];
+  names.setup <- as.character(unname(unlist(names$algo.id)))[pick];
   stopifnot(length(names.setup) == length(names.name),
             all(nchar(names.setup) > 0L));
   rm("names");
@@ -37,7 +37,11 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
     sel <- which(sel);
     stopifnot(length(sel) == 1L);
     return(sel[[1L]]);
-  }, 1L);
+  }, NA_integer_);
+  stopifnot(length(found) == length(setups),
+            all(is.finite(found)),
+            all(found > 0L),
+            all(found <= length(names.setup)));
   names.name <- names.name[found];
   names.setup <- names.setup[found];
   rm("found");
@@ -46,10 +50,9 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
 
   if(is.null(name)) {
     name <- paste0(paste(setups, sep="_", collapse="_"), "_endResultStatistics.md");
-  } else {
-    if(!endsWith(tolower(name), ".md")) {
-      name <- paste0(name, ".md");
-    }
+  }
+  if(!endsWith(tolower(name), ".md")) {
+    name <- paste0(name, ".md");
   }
 
   path <- file.path(.dir.tables("endResultStatistics", config=config), name);
@@ -57,39 +60,43 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
     config$logger("File '", path, "' does not exist, so we need to create it.");
 
     frame <- aitoa.end.results.statistics.frame(config);
-    stopifnot(is.data.frame(frame), nrow(frame) > 0L, ncol(frame) > 0L);
+    stopifnot(is.data.frame(frame),
+              nrow(frame) > 0L,
+              ncol(frame) > 0L,
+              "algo.id" %in% colnames(frame));
 
     features <- aitoa.instance.features.frame(config);
     stopifnot(is.data.frame(features), nrow(features) > 0L, ncol(features) > 0L);
 
-    frame <- frame[as.character(frame$algorithm) %in% names.setup, ];
+    frame <- frame[as.character(frame$algo.id) %in% names.setup, ];
 
     frame$zz <- integer(nrow(frame));
     for(i in seq_len(nrow(frame))) {
-      frame$zz[i] <- which(as.character(frame$algorithm[[i]]) == names.setup)[[1L]];
+      frame$zz[[i]] <- which(as.character(frame$algo.id[[i]]) == names.setup)[[1L]];
     }
+    stopifnot(nrow(frame) >= 1L,
+              all(is.finite(frame$zz)));
+
+    frame <- frame[order(frame$inst.id, frame$zz), ];
     stopifnot(nrow(frame) >= 1L);
 
-    frame <- frame[order(frame$instance, frame$zz), ];
-    stopifnot(nrow(frame) >= 1L);
-
-    problem.ids <- unique(frame$instance);
+    problem.ids <- unique(frame$inst.id);
     problem.ids.len <- length(problem.ids);
     stopifnot(problem.ids.len >= config$min.instances);
     printInst <- (problem.ids.len > 1L);
     config$logger("should we print ", problem.ids.len, " instances: ", printInst);
 
-    printAlgo <- length(unique(frame$algorithm));
+    printAlgo <- length(unique(frame$algo.id));
     stopifnot(printAlgo == length(names.name));
     printAlgo <- (printAlgo > 1L);
     config$logger("should we print algorithm setups: ", printAlgo);
 
     text <- rep("", nrow(frame) + 2L); # 1L + problem.ids.len);
 
-    compare <- (max(vapply(problem.ids, function(p) sum(frame$instance == p), 0L)) > 1L);
+    compare <- (max(vapply(problem.ids, function(p) sum(frame$inst.id == p), 0L)) > 1L);
 
     if(printInst) {
-      text[[1L]] <- "|$\\instance$";
+      text[[1L]] <- "|$\\inst.id$";
       text[[2L]] <- "|:-:";
       text[[1L]] <- paste0(text[[1L]], "|$\\lowerBound{\\objf}$");
       text[[2L]] <- paste0(text[[2L]], "|--:");
@@ -107,10 +114,10 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
     if(compare) {
       config$logger("found problems occuring multiple times");
 
-      for(instance in problem.ids) {
+      for(inst.id in problem.ids) {
 
-        sframe <- frame[frame$instance == instance,];
-        config$logger("now handling setups for id ", instance, ": ", paste(sframe$algorithm, sep=",", collapse=","));
+        sframe <- frame[frame$inst.id == inst.id,];
+        config$logger("now handling setups for id ", inst.id, ": ", paste(sframe$algorithm, sep=",", collapse=","));
 
         f.min <- unname(unlist(sframe$best.f.min));
         f.min.min <- min(f.min);
@@ -131,8 +138,8 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
           row <- sframe[i,];
           if(printInst) {
             if(i <= 1L) {
-              ii <- as.character(row$instance);
-              lb <- features$inst.name == ii;
+              ii <- as.character(row$inst.id);
+              lb <- features$inst.id == ii;
               stopifnot(sum(lb) == 1L);
               lb <- which(lb);
               stopifnot(length(lb) == 1L);
@@ -144,7 +151,7 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
             }
           }
           if(printAlgo) {
-            a <- as.character(row$algorithm) == names.setup;
+            a <- as.character(row$algo.id) == names.setup;
             stopifnot(sum(a) == 1L);
             a <- which(a);
             stopifnot(length(a) == 1L);
@@ -222,8 +229,8 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
         row <- frame[i,];
         j <- j + 1L;
         if(printInst) {
-          ii <- as.character(row$instance);
-          lb <- features$inst.name == ii;
+          ii <- as.character(row$inst.id);
+          lb <- features$inst.id == ii;
           stopifnot(sum(lb) == 1L);
           lb <- which(lb);
           stopifnot(length(lb) == 1L);
@@ -232,7 +239,7 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
           text[[j]] <- paste0("|`", ii, "`|", lb);
         }
         if(printAlgo) {
-          a <- as.character(row$algorithm) == names.setup;
+          a <- as.character(row$algo.id) == names.setup;
           stopifnot(sum(a) == 1L);
           a <- which(a);
           stopifnot(length(a) == 1L);

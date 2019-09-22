@@ -17,35 +17,42 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
   if(!file.exists(file)) {
     config$logger("instance features file '", file, "' does not yet exist, so we need to create it.");
 
-    instances <- as.character(unique(aitoa.setups.frame(config)$instance));
+    instances <- as.character(unique(aitoa.setups.frame(config)$inst.id));
     n <- length(instances);
     stopifnot(n > 0L);
 
     features <- config$instance.features();
     stopifnot(is.data.frame(features),
               nrow(features) >= n,
+              all(c("inst.id",
+                    "inst.jobs",
+                    "inst.machines",
+                    "inst.opt.bound.lower",
+                    "inst.bks") %in% colnames(features)),
               all(is.integer(features$inst.jobs)),
               all(features$inst.jobs > 0L),
               all(is.integer(features$inst.machines)),
               all(features$inst.machines > 0L),
               all(is.integer(features$inst.opt.bound.lower)),
               all(features$inst.opt.bound.lower > 0L),
-              all(is.integer(features$inst.opt.bound.upper)),
-              all(features$inst.opt.bound.upper > 0L),
-              all(is.integer(features$inst.solutions.num)),
-              all(features$inst.solutions.num >= 0L),
-              all(features$inst.opt.bound.upper >= features$inst.opt.bound.lower));
+              all(is.integer(features$inst.bks)),
+              all(features$inst.bks > 0L),
+              all(features$inst.bks >= features$inst.opt.bound.lower));
 
-    names <- as.character(unname(unlist(features$inst.name)));
+    names <- as.character(unname(unlist(features$inst.id)));
     stopifnot(all(vapply(instances, function(i) sum(names == i) == 1L, TRUE)));
 
     features <- features[vapply(instances, function(i) which(names == i)[[1L]], 1L), ];
-    stopifnot(colnames(features) == c("inst.name",
+    features <- features[c("inst.id",
+                           "inst.jobs",
+                           "inst.machines",
+                           "inst.opt.bound.lower",
+                           "inst.bks")];
+    stopifnot(identical(colnames(features), c("inst.id",
                                       "inst.jobs",
                                       "inst.machines",
                                       "inst.opt.bound.lower",
-                                      "inst.opt.bound.upper",
-                                      "inst.solutions.num"),
+                                      "inst.bks")),
               nrow(features) == n,
               all(is.integer(features$inst.jobs)),
               all(features$inst.jobs > 0L),
@@ -53,11 +60,9 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
               all(features$inst.machines > 0L),
               all(is.integer(features$inst.opt.bound.lower)),
               all(features$inst.opt.bound.lower > 0L),
-              all(is.integer(features$inst.opt.bound.upper)),
-              all(features$inst.opt.bound.upper > 0L),
-              all(is.integer(features$inst.solutions.num)),
-              all(features$inst.solutions.num >= 0L),
-              all(features$inst.opt.bound.upper >= features$inst.opt.bound.lower));
+              all(is.integer(features$inst.bks)),
+              all(features$inst.bks > 0L),
+              all(features$inst.bks >= features$inst.opt.bound.lower));
 
     config$logger("done selecting instances, now writing results to file '", file, "'.");
 
@@ -79,23 +84,20 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
   result <- force(result);
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
-            colnames(result) == c("inst.name",
+            identical(colnames(result), c("inst.id",
                                   "inst.jobs",
                                   "inst.machines",
                                   "inst.opt.bound.lower",
-                                  "inst.opt.bound.upper",
-                                  "inst.solutions.num"),
+                                  "inst.bks")),
             all(is.integer(result$inst.jobs)),
             all(result$inst.jobs > 0L),
             all(is.integer(result$inst.machines)),
             all(result$inst.machines > 0L),
             all(is.integer(result$inst.opt.bound.lower)),
             all(result$inst.opt.bound.lower > 0L),
-            all(is.integer(result$inst.opt.bound.upper)),
-            all(result$inst.opt.bound.upper > 0L),
-            all(is.integer(result$inst.solutions.num)),
-            all(result$inst.solutions.num >= 0L),
-            all(result$inst.opt.bound.lower <= result$inst.opt.bound.upper));
+            all(is.integer(result$inst.bks)),
+            all(result$inst.bks > 0L),
+            all(result$inst.opt.bound.lower <= result$inst.bks));
   config$logger("done loading instance features from file '", file, "'.");
   options(old.options);
   return(result);

@@ -23,7 +23,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     stopifnot(is.data.frame(endResults),
               nrow(endResults) > 0L);
 
-    algorithms.all <- as.character(unname(unlist(endResults$algorithm)));
+    algorithms.all <- as.character(unname(unlist(endResults$algo.id)));
     stopifnot(length(algorithms.all) > 0L,
               all(is.character(algorithms.all)),
               all(nchar(algorithms.all) > 0L));
@@ -37,7 +37,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
               all(algorithms.indices > 0L),
               all(algorithms.indices <= length(algorithms.unique)));
 
-    instances.all <- as.character(unname(unlist(endResults$instance)));
+    instances.all <- as.character(unname(unlist(endResults$inst.id)));
     stopifnot(length(instances.all) > 0L,
               all(is.character(instances.all)),
               all(nchar(instances.all) > 0L));
@@ -52,18 +52,18 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
               all(instances.indices <= length(instances.unique)));
 
     instances <- aitoa.instance.features.frame(config);
-    instances.names <- as.character(unname(unlist(instances$inst.name)));
+    instances.names <- as.character(unname(unlist(instances$inst.id)));
     o <- order(instances.names);
     stopifnot(identical(instances.names[o], instances.unique));
     instances.opt.bound.lower <- unname(unlist(instances$inst.opt.bound.lower))[o];
-    instances.opt.bound.upper <- unname(unlist(instances$inst.opt.bound.upper))[o];
-    stopifnot(length(instances.opt.bound.lower) == length(instances.opt.bound.upper),
+    instances.bks <- unname(unlist(instances$inst.bks))[o];
+    stopifnot(length(instances.opt.bound.lower) == length(instances.bks),
               length(instances.opt.bound.lower) == length(instances.names),
               all(instances.opt.bound.lower) > 0L,
-              all(instances.opt.bound.upper) > 0L,
-              all(instances.opt.bound.upper >= instances.opt.bound.lower),
+              all(instances.bks) > 0L,
+              all(instances.bks >= instances.opt.bound.lower),
               all(is.integer(instances.opt.bound.lower)),
-              all(is.integer(instances.opt.bound.upper)));
+              all(is.integer(instances.bks)));
     rm("instances");
 
     n <- as.integer(length(algorithms.unique) * length(instances.unique));
@@ -73,8 +73,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
     n.runs <- integer(n);
 
-    frame.algorithm <- character(n);
-    frame.instance <- character(n);
+    frame.algo.id <- character(n);
+    frame.inst.id <- character(n);
 
     total.time.min <- integer(n);
     total.time.mean <- numeric(n);
@@ -118,11 +118,11 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
     ert.opt.bound.lower.time <- numeric(n);
     ert.opt.bound.lower.fes <- numeric(n);
-    ert.opt.bound.upper.time <- numeric(n);
-    ert.opt.bound.upper.fes <- numeric(n);
+    ert.bks.time <- numeric(n);
+    ert.bks.fes <- numeric(n);
 
     n.opt.bound.lower <- integer(n);
-    n.opt.bound.upper <- integer(n);
+    n.bks <- integer(n);
 
     endResults.best.f.rel <- rep(NA_real_, nrow(endResults));
 
@@ -169,33 +169,33 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       return(time.sum);
     }
 
-# the caches for the algorithm and instance index
-    frame.algorithm.index <- integer(n);
-    frame.instance.index <- integer(n);
+# the caches for the algo.id and inst.id index
+    frame.algo.id.index <- integer(n);
+    frame.inst.id.index <- integer(n);
 
     i <- 0L;
-    for(algorithm.i in seq_along(algorithms.unique)) {
-      for(instance.i in seq_along(instances.unique)) {
+    for(algo.id.i in seq_along(algorithms.unique)) {
+      for(inst.id.i in seq_along(instances.unique)) {
         i <- i + 1L;
         i <- force(i);
         stopifnot(i > 0L, i <= n);
 
-        algorithm <- algorithms.unique[[algorithm.i]];
-        instance <- instances.unique[[instance.i]];
+        algo.id <- algorithms.unique[[algo.id.i]];
+        inst.id <- instances.unique[[inst.id.i]];
 
-        sel <- (algorithms.all == algorithm) &
-               (instances.all == instance);
+        sel <- (algorithms.all == algo.id) &
+               (instances.all == inst.id);
         count <- sum(sel);
         stopifnot(count > 1L);
         sel <- which(sel);
         stopifnot(length(sel) == count);
 
-        frame.algorithm.index[[i]] <- algorithm.i;
-        frame.instance.index[[i]] <- instance.i;
+        frame.algo.id.index[[i]] <- algo.id.i;
+        frame.inst.id.index[[i]] <- inst.id.i;
 
         n.runs[[i]] <- count;
-        frame.algorithm[[i]] <- algorithm;
-        frame.instance[[i]] <- instance;
+        frame.algo.id[[i]] <- algo.id;
+        frame.inst.id[[i]] <- inst.id;
 
 # computing stats for the total consumed time
         total.time <- unname(unlist(endResults$total.time[sel]));
@@ -311,17 +311,17 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
 
 # getting the bounds of the objective function
-        inst <- (instances.names == instance);
+        inst <- (instances.names == inst.id);
         stopifnot(sum(inst) == 1L);
         opt.bound.lower <- instances.opt.bound.lower[inst];
         stopifnot(length(opt.bound.lower) == 1L,
                   opt.bound.lower > 0L,
                   is.integer(opt.bound.lower));
-        opt.bound.upper <- instances.opt.bound.upper[inst];
-        stopifnot(length(opt.bound.upper) == 1L,
-                  opt.bound.upper > 0L,
-                  is.integer(opt.bound.upper),
-                  opt.bound.upper >= opt.bound.lower);
+        bks <- instances.bks[inst];
+        stopifnot(length(bks) == 1L,
+                  bks > 0L,
+                  is.integer(bks),
+                  bks >= opt.bound.lower);
         rm("inst");
 
 # computing stats for the final/best result
@@ -584,49 +584,49 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                   xor((last.improvement.fes.sd.i  > 0), (last.improvement.fes.max.i == last.improvement.fes.min.i)));
 
 # now compute opt bound upper
-        sel.opt.bound.upper <- (opt.bound.upper >= best.f);
-        stopifnot(length(sel.opt.bound.upper) == count);
+        sel.bks <- (bks >= best.f);
+        stopifnot(length(sel.bks) == count);
 
-        n.opt.bound.upper.i <- as.integer(sum(sel.opt.bound.upper));
-        n.opt.bound.upper.i <- force(n.opt.bound.upper.i);
-        stopifnot(n.opt.bound.upper.i >= 0L,
-                  n.opt.bound.upper.i <= count,
-                  xor(best.f.min.i.int > opt.bound.upper, n.opt.bound.upper.i > 0L),
-                  all(sel.opt.bound.upper == endResults$reached.opt.bound.upper[sel]),
-                  n.opt.bound.upper.i == sum(endResults$reached.opt.bound.upper[sel]));
-        n.opt.bound.upper[[i]] <- n.opt.bound.upper.i;
+        n.bks.i <- as.integer(sum(sel.bks));
+        n.bks.i <- force(n.bks.i);
+        stopifnot(n.bks.i >= 0L,
+                  n.bks.i <= count,
+                  xor(best.f.min.i.int > bks, n.bks.i > 0L),
+                  all(sel.bks == endResults$reached.bks[sel]),
+                  n.bks.i == sum(endResults$reached.bks[sel]));
+        n.bks[[i]] <- n.bks.i;
 
-        if(n.opt.bound.upper.i > 0L) {
-          reached.opt.bound.upper.time.ii <- endResults$reached.opt.bound.upper.time[sel];
-          stopifnot(is.integer(reached.opt.bound.upper.time.ii),
-                    length(reached.opt.bound.upper.time.ii) == count);
+        if(n.bks.i > 0L) {
+          reached.bks.time.ii <- endResults$reached.bks.time[sel];
+          stopifnot(is.integer(reached.bks.time.ii),
+                    length(reached.bks.time.ii) == count);
 
-          reached.opt.bound.upper.time.ii <- force(reached.opt.bound.upper.time.ii);
-          ert.opt.bound.upper.time.i <- .ert(reached.opt.bound.upper.time.ii,
-                                             sel.opt.bound.upper,
-                                             n.opt.bound.upper.i,
+          reached.bks.time.ii <- force(reached.bks.time.ii);
+          ert.bks.time.i <- .ert(reached.bks.time.ii,
+                                             sel.bks,
+                                             n.bks.i,
                                              count,
                                              total.time.max.i);
-          ert.opt.bound.upper.time.i <- force(ert.opt.bound.upper.time.i);
-          stopifnot(ert.opt.bound.upper.time.i > 0L,
-                    is.finite(ert.opt.bound.upper.time.i),
-                    ert.opt.bound.upper.time.i >= min(reached.opt.bound.upper.time.ii, na.rm=TRUE));
-          ert.opt.bound.upper.time[[i]] <- ert.opt.bound.upper.time.i;
+          ert.bks.time.i <- force(ert.bks.time.i);
+          stopifnot(ert.bks.time.i > 0L,
+                    is.finite(ert.bks.time.i),
+                    ert.bks.time.i >= min(reached.bks.time.ii, na.rm=TRUE));
+          ert.bks.time[[i]] <- ert.bks.time.i;
 
-          reached.opt.bound.upper.fes.ii <- endResults$reached.opt.bound.upper.fes[sel];
-          reached.opt.bound.upper.fes.ii <- force(reached.opt.bound.upper.fes.ii);
-          stopifnot(is.integer(reached.opt.bound.upper.fes.ii),
-                    length(reached.opt.bound.upper.fes.ii) == count);
-          ert.opt.bound.upper.fes.i <- .ert(reached.opt.bound.upper.fes.ii,
-                                            sel.opt.bound.upper,
-                                            n.opt.bound.upper.i,
+          reached.bks.fes.ii <- endResults$reached.bks.fes[sel];
+          reached.bks.fes.ii <- force(reached.bks.fes.ii);
+          stopifnot(is.integer(reached.bks.fes.ii),
+                    length(reached.bks.fes.ii) == count);
+          ert.bks.fes.i <- .ert(reached.bks.fes.ii,
+                                            sel.bks,
+                                            n.bks.i,
                                             count,
                                             total.fes.max.i);
-          ert.opt.bound.upper.fes.i <- force(ert.opt.bound.upper.fes.i);
-          stopifnot(ert.opt.bound.upper.fes.i > 0L,
-                    is.finite(ert.opt.bound.upper.fes.i),
-                    ert.opt.bound.upper.fes.i >= min(reached.opt.bound.upper.fes.ii, na.rm=TRUE));
-          ert.opt.bound.upper.fes[[i]] <- ert.opt.bound.upper.fes.i;
+          ert.bks.fes.i <- force(ert.bks.fes.i);
+          stopifnot(ert.bks.fes.i > 0L,
+                    is.finite(ert.bks.fes.i),
+                    ert.bks.fes.i >= min(reached.bks.fes.ii, na.rm=TRUE));
+          ert.bks.fes[[i]] <- ert.bks.fes.i;
 
 # now compute opt bound lower
           sel.opt.bound.lower <- (opt.bound.lower >= best.f);
@@ -634,7 +634,7 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
           n.opt.bound.lower.i <- force(n.opt.bound.lower.i);
           stopifnot(n.opt.bound.lower.i >= 0L,
                     xor(best.f.min.i.int > opt.bound.lower, n.opt.bound.lower.i > 0L),
-                    n.opt.bound.lower.i <= n.opt.bound.upper.i,
+                    n.opt.bound.lower.i <= n.bks.i,
                     all(sel.opt.bound.lower == endResults$reached.opt.bound.lower[sel]),
                     n.opt.bound.lower.i == sum(endResults$reached.opt.bound.lower[sel]));
           n.opt.bound.lower[[i]] <- n.opt.bound.lower.i;
@@ -666,17 +666,17 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
             ert.opt.bound.lower.fes[[i]] <- +Inf;
           }
         } else {
-          ert.opt.bound.upper.time[[i]] <- +Inf;
-          ert.opt.bound.upper.fes[[i]] <- +Inf;
+          ert.bks.time[[i]] <- +Inf;
+          ert.bks.fes[[i]] <- +Inf;
           n.opt.bound.lower[[i]] <- 0L;
           ert.opt.bound.lower.time[[i]] <- +Inf;
           ert.opt.bound.lower.fes[[i]] <- +Inf;
-          n.opt.bound.upper[[i]] <- 0L;
+          n.bks[[i]] <- 0L;
         }
 
-        stopifnot(n.opt.bound.lower[[i]] <= n.opt.bound.upper[[i]],
-                  ert.opt.bound.upper.time[[i]] <= ert.opt.bound.lower.time[[i]],
-                  ert.opt.bound.upper.fes[[i]] <= ert.opt.bound.lower.fes[[i]]);
+        stopifnot(n.opt.bound.lower[[i]] <= n.bks[[i]],
+                  ert.bks.time[[i]] <= ert.opt.bound.lower.time[[i]],
+                  ert.bks.fes[[i]] <= ert.opt.bound.lower.fes[[i]]);
       }
     }
 
@@ -695,8 +695,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     last.improvement.fes.sd <- .try.convert.to.int(last.improvement.fes.sd);
     ert.opt.bound.lower.time <- .try.convert.to.int(ert.opt.bound.lower.time);
     ert.opt.bound.lower.fes <- .try.convert.to.int(ert.opt.bound.lower.fes);
-    ert.opt.bound.upper.time <- .try.convert.to.int(ert.opt.bound.upper.time);
-    ert.opt.bound.upper.fes <- .try.convert.to.int(ert.opt.bound.upper.fes);
+    ert.bks.time <- .try.convert.to.int(ert.bks.time);
+    ert.bks.fes <- .try.convert.to.int(ert.bks.fes);
 # done creating and checking the slim chance of integer conversion
 
 # now running final sanity tests
@@ -772,36 +772,36 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
               all(best.f.sd >= 0),
               all(xor(best.f.sd == 0, best.f.max > best.f.min)),
               #
-              all(n.opt.bound.upper >= 0L),
-              all(n.opt.bound.upper >= n.opt.bound.upper),
-              all(n.opt.bound.upper >= 0L),
-              all(n.opt.bound.upper <= n.runs),
+              all(n.bks >= 0L),
+              all(n.bks >= n.bks),
+              all(n.bks >= 0L),
+              all(n.bks <= n.runs),
               all(n.opt.bound.lower <= n.runs),
               #
               all( (n.opt.bound.lower == 0L) == (ert.opt.bound.lower.time >= Inf)),
               all( (n.opt.bound.lower == 0L) == (ert.opt.bound.lower.fes >= Inf)),
-              all( (n.opt.bound.upper == 0L) == (ert.opt.bound.upper.time >= Inf)),
-              all( (n.opt.bound.upper == 0L) == (ert.opt.bound.upper.fes >= Inf)),
+              all( (n.bks == 0L) == (ert.bks.time >= Inf)),
+              all( (n.bks == 0L) == (ert.bks.fes >= Inf)),
               #
               all(ert.opt.bound.lower.time >= 0),
               all(ert.opt.bound.lower.fes > 0),
-              all(ert.opt.bound.upper.time >= 0),
-              all(ert.opt.bound.upper.fes > 0),
+              all(ert.bks.time >= 0),
+              all(ert.bks.fes > 0),
               #
-              all(ert.opt.bound.lower.time >= ert.opt.bound.upper.time),
-              all(ert.opt.bound.lower.fes >= ert.opt.bound.upper.fes),
+              all(ert.opt.bound.lower.time >= ert.bks.time),
+              all(ert.opt.bound.lower.fes >= ert.bks.fes),
               #
-              all(frame.algorithm == algorithms.unique[frame.algorithm.index]),
-              all(frame.instance == instances.unique[frame.instance.index])
+              all(frame.algo.id == algorithms.unique[frame.algo.id.index]),
+              all(frame.inst.id == instances.unique[frame.inst.id.index])
       );
 
     config$logger("done computing basic statistics, now computing more statistics.");
 
-# the algorithm ert ranking function
+# the algo.id ert ranking function
     .algo.ranks.on.inst.ert <- function(source) {
       l <- lapply(seq_along(instances.unique),
                   function(i) {
-                    r <- frame.instance.index == i;
+                    r <- frame.inst.id.index == i;
                     stopifnot(sum(r) > 0L,
                               length(r) == length(source));
                     r <- rank(source[r]);
@@ -818,8 +818,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                   });
       ranks <- vapply(seq_len(n),
                       function(i) {
-                        ll <- l[[frame.instance.index[[i]]]];
-                        return(ll[[frame.algorithm.index[[i]]]]);
+                        ll <- l[[frame.inst.id.index[[i]]]];
+                        return(ll[[frame.algo.id.index[[i]]]]);
                       }, NA_real_);
       ranks <- force(ranks);
       stopifnot(all(ranks > 0),
@@ -833,12 +833,12 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       return(ranks);
     }
 
-    algo.ranks.on.inst.ert.opt.bound.upper.time <- .algo.ranks.on.inst.ert(ert.opt.bound.upper.time);
-    algo.ranks.on.inst.ert.opt.bound.upper.time <- force(algo.ranks.on.inst.ert.opt.bound.upper.time);
-    algo.ranks.on.inst.ert.opt.bound.upper.fes <- .algo.ranks.on.inst.ert(ert.opt.bound.upper.fes);
-    algo.ranks.on.inst.ert.opt.bound.upper.fes <- force(algo.ranks.on.inst.ert.opt.bound.upper.fes);
-    algo.ranks.on.inst.n.opt.bound.upper <- .algo.ranks.on.inst.ert(-n.opt.bound.upper);
-    algo.ranks.on.inst.n.opt.bound.upper <- force(algo.ranks.on.inst.n.opt.bound.upper);
+    algo.ranks.on.inst.ert.bks.time <- .algo.ranks.on.inst.ert(ert.bks.time);
+    algo.ranks.on.inst.ert.bks.time <- force(algo.ranks.on.inst.ert.bks.time);
+    algo.ranks.on.inst.ert.bks.fes <- .algo.ranks.on.inst.ert(ert.bks.fes);
+    algo.ranks.on.inst.ert.bks.fes <- force(algo.ranks.on.inst.ert.bks.fes);
+    algo.ranks.on.inst.n.bks <- .algo.ranks.on.inst.ert(-n.bks);
+    algo.ranks.on.inst.n.bks <- force(algo.ranks.on.inst.n.bks);
 
     algo.ranks.on.inst.ert.opt.bound.lower.time <- .algo.ranks.on.inst.ert(ert.opt.bound.lower.time);
     algo.ranks.on.inst.ert.opt.bound.lower.time <- force(algo.ranks.on.inst.ert.opt.bound.lower.time);
@@ -847,11 +847,11 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     algo.ranks.on.inst.n.opt.bound.lower <- .algo.ranks.on.inst.ert(-n.opt.bound.lower);
     algo.ranks.on.inst.n.opt.bound.lower <- force(algo.ranks.on.inst.n.opt.bound.lower);
 
-    # the instance ert ranking function
+    # the inst.id ert ranking function
     .inst.ranks.for.algos.ert <- function(source) {
       l <- lapply(seq_along(algorithms.unique),
                   function(i) {;
-                    r <- frame.algorithm.index == i;
+                    r <- frame.algo.id.index == i;
                     stopifnot(sum(r) > 0L,
                               length(r) == length(source));
                     r <- rank(source[r]);
@@ -868,8 +868,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                   });
       ranks <- vapply(seq_len(n),
                       function(i) {
-                        ll <- l[[frame.algorithm.index[[i]]]];
-                        return(ll[[frame.instance.index[[i]]]]);
+                        ll <- l[[frame.algo.id.index[[i]]]];
+                        return(ll[[frame.inst.id.index[[i]]]]);
                       }, NA_real_);
       ranks <- force(ranks);
       stopifnot(all(ranks > 0),
@@ -883,21 +883,21 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       return(ranks);
     }
 
-    inst.ranks.for.algo.ert.opt.bound.lower.time <- .inst.ranks.for.algos.ert(ert.opt.bound.upper.time);
+    inst.ranks.for.algo.ert.opt.bound.lower.time <- .inst.ranks.for.algos.ert(ert.bks.time);
     inst.ranks.for.algo.ert.opt.bound.lower.time <- force(inst.ranks.for.algo.ert.opt.bound.lower.time);
-    inst.ranks.for.algo.ert.opt.bound.lower.fes <- .inst.ranks.for.algos.ert(ert.opt.bound.upper.fes);
+    inst.ranks.for.algo.ert.opt.bound.lower.fes <- .inst.ranks.for.algos.ert(ert.bks.fes);
     inst.ranks.for.algo.ert.opt.bound.lower.fes <- force(inst.ranks.for.algo.ert.opt.bound.lower.fes);
-    inst.ranks.for.algo.n.opt.bound.upper <- .inst.ranks.for.algos.ert(-n.opt.bound.upper);
-    inst.ranks.for.algo.n.opt.bound.upper <- force(inst.ranks.for.algo.n.opt.bound.upper);
+    inst.ranks.for.algo.n.bks <- .inst.ranks.for.algos.ert(-n.bks);
+    inst.ranks.for.algo.n.bks <- force(inst.ranks.for.algo.n.bks);
 
-    inst.ranks.for.algo.ert.opt.bound.upper.time <- .inst.ranks.for.algos.ert(ert.opt.bound.upper.time);
-    inst.ranks.for.algo.ert.opt.bound.upper.time <- force(inst.ranks.for.algo.ert.opt.bound.upper.time);
-    inst.ranks.for.algo.ert.opt.bound.upper.fes <- .inst.ranks.for.algos.ert(ert.opt.bound.upper.fes);
-    inst.ranks.for.algo.ert.opt.bound.upper.fes <- force(inst.ranks.for.algo.ert.opt.bound.upper.fes);
+    inst.ranks.for.algo.ert.bks.time <- .inst.ranks.for.algos.ert(ert.bks.time);
+    inst.ranks.for.algo.ert.bks.time <- force(inst.ranks.for.algo.ert.bks.time);
+    inst.ranks.for.algo.ert.bks.fes <- .inst.ranks.for.algos.ert(ert.bks.fes);
+    inst.ranks.for.algo.ert.bks.fes <- force(inst.ranks.for.algo.ert.bks.fes);
     inst.ranks.for.algo.n.opt.bound.lower <- .inst.ranks.for.algos.ert(-n.opt.bound.lower);
     inst.ranks.for.algo.n.opt.bound.lower <- force(inst.ranks.for.algo.n.opt.bound.lower);
 
-# the algorithm best result ranking function
+# the algo.id best result ranking function
     .algo.ranks.on.inst <- function(source) {
       l <- lapply(seq_along(instances.unique),
                   function(i) {
@@ -916,14 +916,14 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                   });
       ranks <- vapply(seq_len(n),
                       function(i) {
-                        inst <- frame.instance.index[[i]];
+                        inst <- frame.inst.id.index[[i]];
                         ll <- l[[inst]];
                         stopifnot(length(ll) > 0L);
 
                         r <- instances.indices == inst;
                         stopifnot(sum(r) > 0L,
                                   length(r) == length(source));
-                        r <- algorithms.indices[r] == frame.algorithm.index[[i]];
+                        r <- algorithms.indices[r] == frame.algo.id.index[[i]];
                         stopifnot(sum(r) > 0L,
                                   length(r) == length(ll));
                         r <- sum(ll[r]);
@@ -944,15 +944,15 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       ranks2 <- force(ranks2);
 
       for(i in seq_along(instances.unique)) {
-        stopifnot(order(ranks2[frame.instance.index == i]) ==
-                    order(ranks[frame.instance.index == i]));
+        stopifnot(order(ranks2[frame.inst.id.index == i]) ==
+                    order(ranks[frame.inst.id.index == i]));
       }
 
       return(ranks2);
     }
     algo.ranks.on.inst.best.f <- .algo.ranks.on.inst(endResults$best.f);
 
-# the instance  best result ranking function
+# the inst.id  best result ranking function
     .inst.ranks.for.algos <- function(source) {
       l <- lapply(seq_along(algorithms.unique),
                   function(i) {
@@ -971,14 +971,14 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                   });
       ranks <- vapply(seq_len(n),
                       function(i) {
-                        algo = frame.algorithm.index[[i]];
+                        algo = frame.algo.id.index[[i]];
                         ll <- l[[algo]];
                         stopifnot(length(ll) > 0L);
 
                         r <- algorithms.indices == algo;
                         stopifnot(sum(r) > 0L,
                                   length(r) == length(source));
-                        r <- instances.indices[r] == frame.instance.index[[i]];
+                        r <- instances.indices[r] == frame.inst.id.index[[i]];
                         stopifnot(sum(r) > 0L,
                                   length(r) == length(ll));
                         r <- sum(ll[r]);
@@ -999,8 +999,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
       ranks2 <- force(ranks2);
 
       for(i in seq_along(algorithms.unique)) {
-        stopifnot(order(ranks2[frame.algorithm.index == i]) ==
-                    order(ranks[frame.algorithm.index == i]));
+        stopifnot(order(ranks2[frame.algo.id.index == i]) ==
+                    order(ranks[frame.algo.id.index == i]));
       }
 
       return(ranks2);
@@ -1012,20 +1012,20 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("endResults.best.f.rel");
 
     stopifnot(#
-              all(algo.ranks.on.inst.ert.opt.bound.upper.time > 0),
-              all(algo.ranks.on.inst.ert.opt.bound.upper.time <= length(algorithms.unique)),
-              all(is.finite(algo.ranks.on.inst.ert.opt.bound.upper.time)),
-              length(algo.ranks.on.inst.ert.opt.bound.upper.time) == n,
+              all(algo.ranks.on.inst.ert.bks.time > 0),
+              all(algo.ranks.on.inst.ert.bks.time <= length(algorithms.unique)),
+              all(is.finite(algo.ranks.on.inst.ert.bks.time)),
+              length(algo.ranks.on.inst.ert.bks.time) == n,
 #
-              all(algo.ranks.on.inst.ert.opt.bound.upper.fes > 0),
-              all(algo.ranks.on.inst.ert.opt.bound.upper.fes <= length(algorithms.unique)),
-              all(is.finite(algo.ranks.on.inst.ert.opt.bound.upper.fes)),
-              length(algo.ranks.on.inst.ert.opt.bound.upper.fes) == n,
+              all(algo.ranks.on.inst.ert.bks.fes > 0),
+              all(algo.ranks.on.inst.ert.bks.fes <= length(algorithms.unique)),
+              all(is.finite(algo.ranks.on.inst.ert.bks.fes)),
+              length(algo.ranks.on.inst.ert.bks.fes) == n,
 #
-              all(algo.ranks.on.inst.n.opt.bound.upper > 0),
-              all(algo.ranks.on.inst.n.opt.bound.upper <= length(algorithms.unique)),
-              all(is.finite(algo.ranks.on.inst.n.opt.bound.upper)),
-              length(algo.ranks.on.inst.n.opt.bound.upper) == n,
+              all(algo.ranks.on.inst.n.bks > 0),
+              all(algo.ranks.on.inst.n.bks <= length(algorithms.unique)),
+              all(is.finite(algo.ranks.on.inst.n.bks)),
+              length(algo.ranks.on.inst.n.bks) == n,
 #
               all(algo.ranks.on.inst.ert.opt.bound.lower.time > 0),
               all(algo.ranks.on.inst.ert.opt.bound.lower.time <= length(algorithms.unique)),
@@ -1042,20 +1042,20 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
               all(is.finite(algo.ranks.on.inst.n.opt.bound.lower)),
               length(algo.ranks.on.inst.n.opt.bound.lower) == n,
               ##
-              all(inst.ranks.for.algo.ert.opt.bound.upper.time > 0),
-              all(inst.ranks.for.algo.ert.opt.bound.upper.time <= length(instances.unique)),
-              all(is.finite(inst.ranks.for.algo.ert.opt.bound.upper.time)),
-              length(inst.ranks.for.algo.ert.opt.bound.upper.time) == n,
+              all(inst.ranks.for.algo.ert.bks.time > 0),
+              all(inst.ranks.for.algo.ert.bks.time <= length(instances.unique)),
+              all(is.finite(inst.ranks.for.algo.ert.bks.time)),
+              length(inst.ranks.for.algo.ert.bks.time) == n,
               #
-              all(inst.ranks.for.algo.ert.opt.bound.upper.fes > 0),
-              all(inst.ranks.for.algo.ert.opt.bound.upper.fes <= length(instances.unique)),
-              all(is.finite(inst.ranks.for.algo.ert.opt.bound.upper.fes)),
-              length(inst.ranks.for.algo.ert.opt.bound.upper.fes) == n,
+              all(inst.ranks.for.algo.ert.bks.fes > 0),
+              all(inst.ranks.for.algo.ert.bks.fes <= length(instances.unique)),
+              all(is.finite(inst.ranks.for.algo.ert.bks.fes)),
+              length(inst.ranks.for.algo.ert.bks.fes) == n,
 #
-              all(inst.ranks.for.algo.n.opt.bound.upper > 0),
-              all(inst.ranks.for.algo.n.opt.bound.upper <= length(instances.unique)),
-              all(is.finite(inst.ranks.for.algo.n.opt.bound.upper)),
-              length(inst.ranks.for.algo.n.opt.bound.upper) == n,
+              all(inst.ranks.for.algo.n.bks > 0),
+              all(inst.ranks.for.algo.n.bks <= length(instances.unique)),
+              all(is.finite(inst.ranks.for.algo.n.bks)),
+              length(inst.ranks.for.algo.n.bks) == n,
               #
               all(inst.ranks.for.algo.ert.opt.bound.lower.time > 0),
               all(inst.ranks.for.algo.ert.opt.bound.lower.time <= length(instances.unique)),
@@ -1083,8 +1083,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
 
     config$logger("done computing statistics, now writing csv file '", file, "'.");
 
-    write.csv(data.frame(algorithm=frame.algorithm,
-                         instance=frame.instance,
+    write.csv(data.frame(algo.id=frame.algo.id,
+                         inst.id=frame.inst.id,
                          n.runs,
                          total.time.min,
                          total.time.mean,
@@ -1120,24 +1120,24 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                          last.improvement.fes.med,
                          last.improvement.fes.max,
                          last.improvement.fes.sd,
-                         n.opt.bound.upper,
-                         ert.opt.bound.upper.time,
-                         ert.opt.bound.upper.fes,
+                         n.bks,
+                         ert.bks.time,
+                         ert.bks.fes,
                          n.opt.bound.lower,
                          ert.opt.bound.lower.time,
                          ert.opt.bound.lower.fes,
                          algo.ranks.on.inst.best.f,
                          inst.ranks.for.algo.best.f,
                          inst.ranks.for.algo.best.f.rel,
-                         algo.ranks.on.inst.ert.opt.bound.upper.time,
-                         algo.ranks.on.inst.ert.opt.bound.upper.fes,
-                         algo.ranks.on.inst.n.opt.bound.upper,
+                         algo.ranks.on.inst.ert.bks.time,
+                         algo.ranks.on.inst.ert.bks.fes,
+                         algo.ranks.on.inst.n.bks,
                          algo.ranks.on.inst.ert.opt.bound.lower.time,
                          algo.ranks.on.inst.ert.opt.bound.lower.fes,
                          algo.ranks.on.inst.n.opt.bound.lower,
-                         inst.ranks.for.algo.ert.opt.bound.upper.time,
-                         inst.ranks.for.algo.ert.opt.bound.upper.fes,
-                         inst.ranks.for.algo.n.opt.bound.upper,
+                         inst.ranks.for.algo.ert.bks.time,
+                         inst.ranks.for.algo.ert.bks.fes,
+                         inst.ranks.for.algo.n.bks,
                          inst.ranks.for.algo.ert.opt.bound.lower.time,
                          inst.ranks.for.algo.ert.opt.bound.lower.fes,
                          inst.ranks.for.algo.n.opt.bound.lower,
@@ -1157,9 +1157,9 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("instances.unique");
     rm("instances.names");
     rm("instances.opt.bound.lower");
-    rm("instances.opt.bound.upper");
-    rm("frame.algorithm");
-    rm("frame.instance");
+    rm("instances.bks");
+    rm("frame.algo.id");
+    rm("frame.inst.id");
     rm("n.runs");
     rm("total.time.min");
     rm("total.time.mean");
@@ -1195,9 +1195,9 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("last.improvement.fes.med");
     rm("last.improvement.fes.max");
     rm("last.improvement.fes.sd");
-    rm("n.opt.bound.upper");
-    rm("ert.opt.bound.upper.time");
-    rm("ert.opt.bound.upper.fes");
+    rm("n.bks");
+    rm("ert.bks.time");
+    rm("ert.bks.fes");
     rm("n.opt.bound.lower");
     rm("ert.opt.bound.lower.time");
     rm("ert.opt.bound.lower.fes");
@@ -1205,20 +1205,20 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
     rm("algo.ranks.on.inst.best.f");
     rm("inst.ranks.for.algo.best.f");
     rm("inst.ranks.for.algo.best.f.rel");
-    rm("algo.ranks.on.inst.ert.opt.bound.upper.time");
-    rm("algo.ranks.on.inst.ert.opt.bound.upper.fes");
-    rm("algo.ranks.on.inst.n.opt.bound.upper");
+    rm("algo.ranks.on.inst.ert.bks.time");
+    rm("algo.ranks.on.inst.ert.bks.fes");
+    rm("algo.ranks.on.inst.n.bks");
     rm("algo.ranks.on.inst.ert.opt.bound.lower.time");
     rm("algo.ranks.on.inst.ert.opt.bound.lower.fes");
     rm("algo.ranks.on.inst.n.opt.bound.lower");
     rm("inst.ranks.for.algo.ert.opt.bound.lower.time");
     rm("inst.ranks.for.algo.ert.opt.bound.lower.fes");
     rm("inst.ranks.for.algo.n.opt.bound.lower");
-    rm("inst.ranks.for.algo.ert.opt.bound.upper.time");
-    rm("inst.ranks.for.algo.ert.opt.bound.upper.fes");
-    rm("inst.ranks.for.algo.n.opt.bound.upper");
-    rm("frame.algorithm.index");
-    rm("frame.instance.index");
+    rm("inst.ranks.for.algo.ert.bks.time");
+    rm("inst.ranks.for.algo.ert.bks.fes");
+    rm("inst.ranks.for.algo.n.bks");
+    rm("frame.algo.id.index");
+    rm("frame.inst.id.index");
   }
 
   stopifnot(file.exists(file),
@@ -1230,8 +1230,8 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
             ncol(result) == 58L,
-            colnames(result) == c("algorithm",
-                                  "instance",
+            colnames(result) == c("algo.id",
+                                  "inst.id",
                                   "n.runs",
                                   "total.time.min",
                                   "total.time.mean",
@@ -1267,24 +1267,24 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
                                   "last.improvement.fes.med",
                                   "last.improvement.fes.max",
                                   "last.improvement.fes.sd",
-                                  "n.opt.bound.upper",
-                                  "ert.opt.bound.upper.time",
-                                  "ert.opt.bound.upper.fes",
+                                  "n.bks",
+                                  "ert.bks.time",
+                                  "ert.bks.fes",
                                   "n.opt.bound.lower",
                                   "ert.opt.bound.lower.time",
                                   "ert.opt.bound.lower.fes",
                                   "algo.ranks.on.inst.best.f",
                                   "inst.ranks.for.algo.best.f",
                                   "inst.ranks.for.algo.best.f.rel",
-                                  "algo.ranks.on.inst.ert.opt.bound.upper.time",
-                                  "algo.ranks.on.inst.ert.opt.bound.upper.fes",
-                                  "algo.ranks.on.inst.n.opt.bound.upper",
+                                  "algo.ranks.on.inst.ert.bks.time",
+                                  "algo.ranks.on.inst.ert.bks.fes",
+                                  "algo.ranks.on.inst.n.bks",
                                   "algo.ranks.on.inst.ert.opt.bound.lower.time",
                                   "algo.ranks.on.inst.ert.opt.bound.lower.fes",
                                   "algo.ranks.on.inst.n.opt.bound.lower",
-                                  "inst.ranks.for.algo.ert.opt.bound.upper.time",
-                                  "inst.ranks.for.algo.ert.opt.bound.upper.fes",
-                                  "inst.ranks.for.algo.n.opt.bound.upper",
+                                  "inst.ranks.for.algo.ert.bks.time",
+                                  "inst.ranks.for.algo.ert.bks.fes",
+                                  "inst.ranks.for.algo.n.bks",
                                   "inst.ranks.for.algo.ert.opt.bound.lower.time",
                                   "inst.ranks.for.algo.ert.opt.bound.lower.fes",
                                   "inst.ranks.for.algo.n.opt.bound.lower"),
@@ -1363,33 +1363,33 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
             all(xor(result$best.f.sd == 0,
                     result$best.f.max > result$best.f.min)),
             #
-            all(result$n.opt.bound.upper >= 0L),
-            all(result$n.opt.bound.upper >= result$n.opt.bound.upper),
-            all(result$n.opt.bound.upper >= 0L),
-            all(result$n.opt.bound.upper <= result$n.runs),
+            all(result$n.bks >= 0L),
+            all(result$n.bks >= result$n.bks),
+            all(result$n.bks >= 0L),
+            all(result$n.bks <= result$n.runs),
             all(result$n.opt.bound.lower <= result$n.runs),
             #
             all( (result$n.opt.bound.lower == 0L) == (result$ert.opt.bound.lower.time >= Inf)),
             all( (result$n.opt.bound.lower == 0L) == (result$ert.opt.bound.lower.fes >= Inf)),
-            all( (result$n.opt.bound.upper == 0L) == (result$ert.opt.bound.upper.time >= Inf)),
-            all( (result$n.opt.bound.upper == 0L) == (result$ert.opt.bound.upper.fes >= Inf)),
+            all( (result$n.bks == 0L) == (result$ert.bks.time >= Inf)),
+            all( (result$n.bks == 0L) == (result$ert.bks.fes >= Inf)),
             #
             all(result$ert.opt.bound.lower.time >= 0),
             all(result$ert.opt.bound.lower.fes > 0),
-            all(result$ert.opt.bound.upper.time >= 0),
-            all(result$ert.opt.bound.upper.fes > 0),
+            all(result$ert.bks.time >= 0),
+            all(result$ert.bks.fes > 0),
             #
-            all(result$ert.opt.bound.lower.time >= result$ert.opt.bound.upper.time),
-            all(result$ert.opt.bound.lower.fes >= result$ert.opt.bound.upper.fes),
+            all(result$ert.opt.bound.lower.time >= result$ert.bks.time),
+            all(result$ert.opt.bound.lower.fes >= result$ert.bks.fes),
 #
-            all(result$algo.ranks.on.inst.ert.opt.bound.upper.time > 0),
-            all(is.finite(result$algo.ranks.on.inst.ert.opt.bound.upper.time)),
+            all(result$algo.ranks.on.inst.ert.bks.time > 0),
+            all(is.finite(result$algo.ranks.on.inst.ert.bks.time)),
             #
-            all(result$algo.ranks.on.inst.ert.opt.bound.upper.fes > 0),
-            all(is.finite(result$algo.ranks.on.inst.ert.opt.bound.upper.fes)),
+            all(result$algo.ranks.on.inst.ert.bks.fes > 0),
+            all(is.finite(result$algo.ranks.on.inst.ert.bks.fes)),
             #
-            all(result$algo.ranks.on.inst.n.opt.bound.upper > 0),
-            all(is.finite(result$algo.ranks.on.inst.n.opt.bound.upper)),
+            all(result$algo.ranks.on.inst.n.bks > 0),
+            all(is.finite(result$algo.ranks.on.inst.n.bks)),
             #
             all(result$algo.ranks.on.inst.ert.opt.bound.lower.time > 0),
             all(is.finite(result$algo.ranks.on.inst.ert.opt.bound.lower.time)),
@@ -1400,14 +1400,14 @@ aitoa.end.results.statistics.frame <- function(config=aitoa.config()) {
             all(result$algo.ranks.on.inst.n.opt.bound.lower > 0),
             all(is.finite(result$algo.ranks.on.inst.n.opt.bound.lower)),
             ##
-            all(result$inst.ranks.for.algo.ert.opt.bound.upper.time > 0),
-            all(is.finite(result$inst.ranks.for.algo.ert.opt.bound.upper.time)),
+            all(result$inst.ranks.for.algo.ert.bks.time > 0),
+            all(is.finite(result$inst.ranks.for.algo.ert.bks.time)),
             #
-            all(result$inst.ranks.for.algo.ert.opt.bound.upper.fes > 0),
-            all(is.finite(result$inst.ranks.for.algo.ert.opt.bound.upper.fes)),
+            all(result$inst.ranks.for.algo.ert.bks.fes > 0),
+            all(is.finite(result$inst.ranks.for.algo.ert.bks.fes)),
             #
-            all(result$inst.ranks.for.algo.n.opt.bound.upper > 0),
-            all(is.finite(result$inst.ranks.for.algo.n.opt.bound.upper)),
+            all(result$inst.ranks.for.algo.n.bks > 0),
+            all(is.finite(result$inst.ranks.for.algo.n.bks)),
             #
             all(result$inst.ranks.for.algo.ert.opt.bound.lower.time > 0),
             all(is.finite(result$inst.ranks.for.algo.ert.opt.bound.lower.time)),

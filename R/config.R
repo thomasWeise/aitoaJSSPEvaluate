@@ -18,7 +18,7 @@
 #' @param min.runs the minimum number of runs per instance and algorithm
 #' @param instance.features a function which can be called and will return a
 #'   data frame with the names and features of instances, which must be
-#'   formatted exactly as documented in \link{jsspInstances}
+#'   formatted exactly as documented in \code{jsspInstancesAndResults::jssp.instances}
 #' @return the configuration object
 #' @importFrom utils data
 #' @export aitoa.config
@@ -28,7 +28,7 @@ aitoa.config <- function(dir.results="./results",
                          min.instances=4L,
                          min.runs=101L,
                          graphics.ext="svg",
-                         instance.features=function() get(data("jsspInstances"))) {
+                         instance.features=function() jsspInstancesAndResults::jssp.instances) {
 
   stopifnot(is.character(dir.results),
             is.character(dir.evaluation),

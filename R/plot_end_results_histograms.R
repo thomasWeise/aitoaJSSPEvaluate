@@ -196,7 +196,7 @@ aitoa.plot.end.results.histograms <- function(config=aitoa.config()) {
   stopifnot(is.data.frame(end.results),
             nrow(end.results) > 0L);
 
-  setups <- unique(unname(unlist(end.results$algorithm)));
+  setups <- unique(unname(unlist(end.results$algo.id)));
   stopifnot(length(setups) > 0L,
             nrow(end.results) >= (config$min.runs*config$min.instances*length(setups)));
   names <- .get.setup.names(setups, config);
@@ -218,11 +218,11 @@ aitoa.plot.end.results.histograms <- function(config=aitoa.config()) {
     setup <- setups[[i]];
     name <- names[[i]];
 
-    end.results.setup <- end.results[end.results$algorithm == setup, ];
+    end.results.setup <- end.results[end.results$algo.id == setup, ];
     stopifnot(nrow(end.results.setup) > 0L,
               nrow(end.results.setup) >= config$min.runs*config$min.instances);
 
-    instances <- unique(unlist(end.results.setup$instance));
+    instances <- unique(unlist(end.results.setup$inst.id));
     length.instances <- length(instances);
 
     stopifnot(length.instances > 0L,
@@ -245,7 +245,7 @@ aitoa.plot.end.results.histograms <- function(config=aitoa.config()) {
                p2 <- par(mfrow=c(length(instances), 1L));
                put.legend <- TRUE;
                for(inst in instances) {
-                 .end.result.histogram(end.results.setup[end.results.setup$instance == inst,]$best.f,
+                 .end.result.histogram(end.results.setup[end.results.setup$inst.id == inst,]$best.f,
                                        as.character(inst),
                                        put.legend);
                  put.legend <- FALSE;

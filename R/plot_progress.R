@@ -214,10 +214,10 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
 
   files <- aitoa.setups.frame(config);
   stopifnot(is.data.frame(files), nrow(files) > 0L);
-  files.setup <- as.character(unname(unlist(files$algorithm)));
+  files.setup <- as.character(unname(unlist(files$algo.id)));
   stopifnot(length(files.setup) == nrow(files),
             all(nchar(files.setup) > 0L));
-  files.instance <- as.character(unname(unlist(files$instance)));
+  files.instance <- as.character(unname(unlist(files$inst.id)));
   stopifnot(length(files.instance) == nrow(files),
             all(nchar(files.instance) > 0L));
   files.file <- as.character(unname(unlist(files$file)));
@@ -234,7 +234,7 @@ aitoa.plot.progress <- function(config, setups, ..., name=NULL,
   names.name <- names.name[pick];
   stopifnot(length(names.name) > 0L,
             all(nchar(names.name) > 0L));
-  names.setup <- as.character(unname(unlist(names$algo.setup)))[pick];
+  names.setup <- as.character(unname(unlist(names$algo.id)))[pick];
   stopifnot(length(names.setup) == length(names.name),
             all(nchar(names.setup) > 0L));
   rm("names");

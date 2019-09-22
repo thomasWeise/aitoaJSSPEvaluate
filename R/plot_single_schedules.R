@@ -26,7 +26,7 @@ aitoa.plot.gantt.charts.single <- function(setup,
   names <- aitoa.algorithm.parameters.frame(config);
   stopifnot(is.data.frame(names), nrow(names) > 0L, nrow(names) <= nrow(frame));
 
-  setups <- as.character(unname(unlist(names$algo.setup)));
+  setups <- as.character(unname(unlist(names$algo.id)));
   names <- as.character(unname(unlist(names$algo.name)));
 
   setup.index <- (!is.na(names)) & (names==setup);
@@ -43,11 +43,11 @@ aitoa.plot.gantt.charts.single <- function(setup,
   features <- aitoa.instance.features.frame(config);
   stopifnot(is.data.frame(features), nrow(features) > 0L, ncol(features) > 0L);
   instances.names <- names(instances);
-  features.names <- as.character(unname(unlist(features$inst.name)));
+  features.names <- as.character(unname(unlist(features$inst.id)));
   stopifnot(all(vapply(instances.names, function(n) sum(features.names == n), 1L) == 1L));
 
   config$logger("data loaded, now picking algorithms");
-  setups <- as.character(unname(unlist(frame$algorithm)));
+  setups <- as.character(unname(unlist(frame$algo.id)));
   stopifnot(length(setups) > 0L);
   sel <- setups == setup.name;
   stopifnot(sum(sel) >= length(instances));
@@ -59,7 +59,7 @@ aitoa.plot.gantt.charts.single <- function(setup,
   metric <- paste0("best.f.", stat);
   metric.file <- paste0(metric, ".file");
 
-  frame.instances <- as.character(unname(unlist(frame$instance)));
+  frame.instances <- as.character(unname(unlist(frame$inst.id)));
 
   .dir <- .dir.plots("gantt", "single", stat, config=config);
 

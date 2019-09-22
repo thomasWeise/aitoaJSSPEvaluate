@@ -12,7 +12,7 @@
   stopifnot(is.data.frame(names),
             nrow(names) > 0L);
 
-  name.1 <- unname(unlist(names$algo.setup));
+  name.1 <- unname(unlist(names$algo.id));
   stopifnot(length(name.1) == length(setups),
             length(unique(name.1)) == length(name.1));
   name.1.in.setups <- vapply(name.1, function(nn) which(setups==nn), 1L);
