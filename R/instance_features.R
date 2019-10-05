@@ -80,11 +80,23 @@ aitoa.instance.features.frame <- function(config=aitoa.config()) {
   stopifnot(file.exists(file),
             file.size(file) > 10L);
   config$logger("now loading instance features from file '", file, "'.");
-  result <- read.csv(file, check.names = FALSE);
+  result <- read.csv(file=file,
+                     col.names = c("inst.id",
+                                   "inst.jobs",
+                                   "inst.machines",
+                                   "inst.opt.bound.lower",
+                                   "inst.bks"),
+                     colClasses=c("factor",
+                                  "integer",
+                                  "integer",
+                                  "integer",
+                                  "integer"),
+                       check.names = FALSE);
   result <- force(result);
   stopifnot(is.data.frame(result),
             nrow(result) > 0L,
-            identical(colnames(result), c("inst.id",
+            identical(colnames(result),
+                                c("inst.id",
                                   "inst.jobs",
                                   "inst.machines",
                                   "inst.opt.bound.lower",

@@ -267,11 +267,31 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
   stopifnot(file.exists(file),
             file.size(file) > 100L);
   config$logger("now loading list of setups from file '", file, "'.");
-  result <- read.csv(file, check.names = FALSE);
+  
+  result <- read.csv(file=file,
+                     col.names = c("id",
+                                   "algo.id",
+                                   "inst.id",
+                                   "dir",
+                                   "seed",
+                                   "file"),
+                     colClasses = c("integer",
+                                    "factor",
+                                    "factor",
+                                    "factor",
+                                    "character",
+                                    "character"),
+                     check.names = FALSE);
+  
   result <- force(result);
   stopifnot(nrow(result) > 0L,
             ncol(result) == 6L,
-            identical(colnames(result), c("id", "algo.id", "inst.id", "dir", "seed", "file")),
+            identical(colnames(result), c("id",
+                                          "algo.id",
+                                          "inst.id",
+                                          "dir",
+                                          "seed",
+                                          "file")),
             all(is.integer(result$id)),
             all(result$id == (1L:nrow(result))),
             all(is.factor(result$algo.id)),
@@ -280,8 +300,10 @@ aitoa.setups.frame <- function(config=aitoa.config()) {
             all(startsWith(as.character(result$seed), "$")),
             all(is.factor(result$dir) | is.character(result$dir)),
             all(is.factor(result$file) | is.character(result$file)));
+  
   instances.len <- length(unique(result$inst.id));
   algorithms.len <- length(unique(result$algo.id));
+  
   stopifnot(instances.len >= config$min.instances,
             (nrow(result)/(instances.len*algorithms.len)) == as.integer((nrow(result)/(instances.len*algorithms.len))),
             (nrow(result)/(instances.len*algorithms.len)) >= config$min.runs);
