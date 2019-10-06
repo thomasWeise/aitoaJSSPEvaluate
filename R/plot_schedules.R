@@ -80,7 +80,7 @@ aitoa.plot.gantt.charts <- function(config=aitoa.config()) {
 
   setups <- unique(unname(unlist(frame$algo.id)));
   stopifnot(length(setups) > 0L);
-  names <- .get.setup.names(setups, config);
+  names <- aitoa.get.algorithm.setup.names(setups, config);
   stopifnot(length(names) == length(setups));
 
   features <- aitoa.instance.features.frame(config);

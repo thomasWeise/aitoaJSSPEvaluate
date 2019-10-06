@@ -1,30 +1,39 @@
-# get the setup names
+#' @title Get the Names of the Given Algorithm Setups
+#' @description Take the mnemonic and translate them to nice names
+#' @param setups the list/vector of algorithm setup names
+#' @param config the configuration
+#' @return the vector of algorithm names
 #' @include algorithm_parameters_frame.R
-.get.setup.names <- function(setups, config=aitoa.config()) {
-  stopifnot(is.factor(setups));
+#' @export aitoa.get.algorithm.setup.names
+aitoa.get.algorithm.setup.names <- function(setups, config=aitoa.config()) {
   setups <- unname(unlist(setups));
-  l <- length(setups);
-  stopifnot(l > 0L);
-  setups <- unique(setups);
-  stopifnot(length(setups) >= l);
+  stopifnot(is.factor(setups) || is.character(setups),
+            !any(is.na(setups)));
+  setups <- as.character(setups);
+  stopifnot(!any(is.na(setups)),
+            all(nchar(setups) > 0L));
+  
+  stopifnot(length(setups) > 0L);
+  
+  frame <- aitoa.algorithm.parameters.frame(config);
+  stopifnot(is.data.frame(frame),
+            nrow(frame) > 0L);
 
-  names <- aitoa.algorithm.parameters.frame(config);
-  stopifnot(is.data.frame(names),
-            nrow(names) > 0L);
-
-  name.1 <- unname(unlist(names$algo.id));
-  stopifnot(length(name.1) == length(setups),
-            length(unique(name.1)) == length(name.1));
-  name.1.in.setups <- vapply(name.1, function(nn) which(setups==nn), 1L);
-  stopifnot(all(name.1.in.setups > 0L),
-            all(name.1.in.setups <= length(setups)));
-  rm("name.1.in.setups");
-  setups.in.name.1 <- vapply(setups, function(nn) which(name.1==nn), 1L);
-  stopifnot(all(setups.in.name.1 > 0L),
-            all(setups.in.name.1 <= length(name.1)));
-  rm("name.1");
-  names <- unname(unlist(names$algo.name[setups.in.name.1]));
-  rm("setups.in.name.1");
-  stopifnot(length(names) == length(setups));
+  algo.ids <- as.character(unname(unlist(frame$algo.id)));
+  stopifnot(length(algo.ids) >= length(setups),
+            length(unique(algo.ids)) == length(algo.ids));
+  
+  indexes <- vapply(setups, function(s) which(algo.ids == s), NA_integer_);
+  stopifnot(is.integer(indexes),
+            all(is.finite(indexes)),
+            all(indexes > 0L),
+            all(indexes <= length(algo.ids)));
+  
+  names <- as.character(unname(unlist(frame$algo.name)));
+  stopifnot(length(names) == length(algo.ids));
+  
+  names <- names[indexes];
+  stopifnot(is.character(names),
+            all(nchar(names) > 0L));
   return(names);
 }

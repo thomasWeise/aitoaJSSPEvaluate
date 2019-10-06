@@ -32,7 +32,7 @@ aitoa.end.results.statistics.table <- function(config, setups, name=NULL) {
   rm("pick");
 
   found <- vapply(setups, function(setup) {
-    sel <- names.name == setup;
+    sel <- (names.name == setup);
     stopifnot(sum(sel) == 1L);
     sel <- which(sel);
     stopifnot(length(sel) == 1L);

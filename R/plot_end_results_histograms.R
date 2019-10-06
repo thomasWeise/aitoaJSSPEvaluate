@@ -199,7 +199,7 @@ aitoa.plot.end.results.histograms <- function(config=aitoa.config()) {
   setups <- unique(unname(unlist(end.results$algo.id)));
   stopifnot(length(setups) > 0L,
             nrow(end.results) >= (config$min.runs*config$min.instances*length(setups)));
-  names <- .get.setup.names(setups, config);
+  names <- aitoa.get.algorithm.setup.names(setups, config);
   stopifnot(length(names) == length(setups));
   sel <- !is.na(names);
   names <- names[sel];
