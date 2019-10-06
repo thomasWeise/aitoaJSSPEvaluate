@@ -18,30 +18,35 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
   if(!file.exists(file)) {
     config$logger("algorithm parameters file '", file, "' does not yet exist, so we need to create it.");
 
+# get the algorithm ids
     algorithms <- as.character(unique(aitoa.setups.frame(config)$algo.id));
     n <- length(algorithms);
     stopifnot(n > 0L);
 
-    config$logger("setups loaded, now computing algorithm parameters");
+    config$logger("setups loaded, now computing algorithm parameters for ",
+                  n, " different algorithms.");
     parameters <- lapply(algorithms, aitoa.algorithm.parameters, parsers=parsers);
 
     stopifnot(length(parameters) == length(algorithms),
               all(vapply(parameters, length, 0L) > 0L));
 
-    names <- lapply(parameters, names);
-    stopifnot(length(names) >= 1L);
-    names <- unique(unname(unlist(names)));
-    stopifnot(length(names) >= 2L);
-    names <- names[order(vapply(names, function(nn) which(nn==.algo.param.seq)[[1L]], 0L))];
-    names <- c("algo.id", names);
+    param.names <- lapply(parameters, names);
+    stopifnot(length(param.names) >= 1L);
+    param.names <- unique(unname(unlist(param.names)));
+    stopifnot(length(param.names) >= 2L,
+              !(any(param.names == "algo.id")));
+    param.names <- param.names[order(vapply(param.names,
+                        function(nn) which(nn==.algo.param.seq)[[1L]], 0L))];
+    param.names <- c("algo.id", param.names);
 
-    config$logger(paste0("found the following parameters: ", paste(names), "; now building frame"));
+    config$logger("found the following parameters: ",
+                  paste(param.names), "; now building frame");
 
     parameters <- lapply(seq_along(parameters),
                          function(pi) {
                            pp <- parameters[[pi]];
-                           pp <- pp[names];
-                           names(pp) <- names;
+                           pp <- pp[param.names];
+                           names(pp) <- param.names;
                            pp[[1L]] <- algorithms[[pi]];
                            pp[vapply(pp, is.null, FALSE)] <- NA;
                            pp <- force(pp);
@@ -49,16 +54,17 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
                          });
 
     parameters <- matrix(unlist(parameters), nrow=n, byrow=TRUE);
-    colnames(parameters) <- names;
+    colnames(parameters) <- param.names;
     rownames(parameters) <- NULL;
-    parameters <- data.frame(parameters, check.names = FALSE);
+    parameters <- data.frame(parameters,
+                             check.names = FALSE);
 
     stopifnot(ncol(parameters) > 0L,
               nrow(parameters) > 0L,
               nrow(parameters) == n,
               length(parameters$algo.id) == n);
 
-    srt <- c("algo.algorithm", "algo.name", names);
+    srt <- c("algo.algorithm", "algo.name", param.names);
     srt <- unique(srt);
     l <- unname(lapply(srt, function(ss) parameters[, ss]));
     l <- do.call(order, l);
@@ -70,8 +76,9 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
               nrow(parameters) == n,
               length(parameters$algo.id) == n);
 
-    names <- parameters$algo.name[!is.na(parameters$algo.name)];
-    stopifnot(length(names) == length(unique(names)));
+    param.names <- parameters$algo.name;
+    param.names <- param.names[!is.na(param.names)];
+    stopifnot(length(param.names) == length(unique(param.names)));
 
     config$logger("done creating frame, now writing results to file '", file, "'.");
 
@@ -80,7 +87,7 @@ aitoa.algorithm.parameters.frame <- function(config=aitoa.config(),
               row.names=FALSE,
               quote=FALSE);
     rm("parameters");
-    rm("names");
+    rm("param.names");
     rm("algorithms");
     stopifnot(file.exists(file),
               file.size(file) > 10L*n);

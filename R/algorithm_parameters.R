@@ -513,6 +513,16 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
 
   if(cr > 0) {
     res <- paste0(res, "_", round(cr*100));
+    
+    bin.op <- parameters[[.algo.operator.binary]];
+    stopifnot(is.character(bin.op),
+              length(bin.op) == 1L,
+              !is.na(bin.op),
+              !is.null(bin.op),
+              nchar(bin.op) > 0L);
+    if(!identical(bin.op, .algo.operator.binary.tree)) {
+      res <- paste0(res, substr(bin.op, 1L, 1L));
+    }
   }
 
   return(res);
@@ -685,6 +695,16 @@ aitoa.algorithm.parameters.ea <- function(algoDir) {
   }
 
   res <- paste0(res, "_", unary);
+  
+  bin.op <- parameters[[.algo.operator.binary]];
+  stopifnot(is.character(bin.op),
+            length(bin.op) == 1L,
+            !is.na(bin.op),
+            !is.null(bin.op),
+            nchar(bin.op) > 0L);
+  if(!identical(bin.op, .algo.operator.binary.tree)) {
+    res <- paste0(res, "_", substr(bin.op, 1L, 1L));
+  }
 
   return(res);
 }
@@ -1008,6 +1028,7 @@ aitoa.algorithm.parameters.gp <- function(algoDir) {
   stopifnot(!is.null(result));
   result[[.algo.representation]] <- .algo.representation.tree;
   result[[.algo.max.tree.depth]] <- depth;
+  result[[.algo.name]] <- paste0("gp", depth, "_", result[[.algo.name]]);
   return(result);
 }
 
