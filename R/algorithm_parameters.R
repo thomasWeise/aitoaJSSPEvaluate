@@ -182,14 +182,19 @@ aitoa.algorithm.parameters.rs <- function(algoDir) {
 # parse hill climbing parameters to a short name
 .aitoa.algorithm.name.hc <- function(parameters) {
   algo <- parameters[[.algo.algorithm]];
-  stopifnot(!is.null(algo), is.character(algo), nchar(algo) > 0L,
+  stopifnot(!is.null(algo),
+            is.character(algo),
+            nchar(algo) > 0L,
             algo=="hc");
 
   restart <- parameters[[.algo.restarts]];
-  stopifnot(!is.null(restart), is.logical(restart));
+  stopifnot(!is.null(restart),
+            is.logical(restart));
 
   unary <- parameters[[.algo.operator.unary]];
-  stopifnot(!is.null(unary), is.character(unary), nchar(unary) > 0L);
+  stopifnot(!is.null(unary),
+            is.character(unary),
+            nchar(unary) > 0L);
 
   if(endsWith(unary, "R")) {
     s <- substring(unary, 1L, nchar(unary) - 1L);
@@ -513,14 +518,15 @@ aitoa.algorithm.parameters.sa <- function(algoDir) {
 
   if(cr > 0) {
     res <- paste0(res, "_", round(cr*100));
-    
+
     bin.op <- parameters[[.algo.operator.binary]];
     stopifnot(is.character(bin.op),
               length(bin.op) == 1L,
               !is.na(bin.op),
               !is.null(bin.op),
               nchar(bin.op) > 0L);
-    if(!identical(bin.op, .algo.operator.binary.tree)) {
+    if(!(identical(bin.op, .algo.operator.binary.tree) |
+         identical(bin.op, "sequence"))) {
       res <- paste0(res, substr(bin.op, 1L, 1L));
     }
   }
@@ -695,14 +701,15 @@ aitoa.algorithm.parameters.ea <- function(algoDir) {
   }
 
   res <- paste0(res, "_", unary);
-  
+
   bin.op <- parameters[[.algo.operator.binary]];
   stopifnot(is.character(bin.op),
             length(bin.op) == 1L,
             !is.na(bin.op),
             !is.null(bin.op),
             nchar(bin.op) > 0L);
-  if(!identical(bin.op, .algo.operator.binary.tree)) {
+  if(!(identical(bin.op, .algo.operator.binary.tree) |
+       identical(bin.op, "sequence"))) {
     res <- paste0(res, "_", substr(bin.op, 1L, 1L));
   }
 
@@ -788,6 +795,27 @@ aitoa.algorithm.parameters.ma <- function(algoDir) {
 }
 
 
+
+# compute the eda name
+.aitoa.algorithm.name.eda <- function(parameters) {
+  mu <- parameters[[.algo.mu]];
+  stopifnot(!is.null(mu), is.integer(mu), mu > 0L);
+
+  lambda <- parameters[[.algo.lambda]];
+  stopifnot(!is.null(lambda), is.integer(lambda), lambda > 0L);
+
+  model <- parameters[[.algo.model]];
+  stopifnot(!is.null(model), is.character(model), nchar(model) > 0L);
+
+
+  res <- paste0(model, mu);
+  if(lambda != mu) {
+    res <- paste0(res, "+", lambda);
+  }
+
+  return(res);
+}
+
 #' @title Parse the Parameters of an Estimation of Distribution Algorithm
 #' @description Check whether an algorithm directory is an Estimation of
 #'   Distribution Algorithm and return the corresponding parameters if yes or
@@ -823,7 +851,8 @@ aitoa.algorithm.parameters.eda <- function(algoDir) {
   lambda <- .parse.int(mu.lambda[[2L]]);
   stopifnot(lambda > 0L);
 
-  return(.make.list(c(.algo.algorithm,
+  res <- .make.list(c(.algo.name,
+                      .algo.algorithm,
                       .algo.restarts,
                       .algo.representation,
                       .algo.model,
@@ -831,6 +860,7 @@ aitoa.algorithm.parameters.eda <- function(algoDir) {
                       .algo.lambda,
                       .algo.fitness,
                       .algo.is.hybrid),
+                    "",
                     .algo.algorithm.eda,
                     FALSE,
                     .algo.representation.default,
@@ -838,10 +868,39 @@ aitoa.algorithm.parameters.eda <- function(algoDir) {
                     mu,
                     lambda,
                     fitness,
-                    FALSE));
+                    FALSE);
+  res <- force(res);
+  res[[1L]] <- .aitoa.algorithm.name.eda(res);
+  res <- force(res);
+
+  return(res);
 }
 
 
+
+
+# compute the eda name
+.aitoa.algorithm.name.heda <- function(parameters) {
+  mu <- parameters[[.algo.mu]];
+  stopifnot(!is.null(mu), is.integer(mu), mu > 0L);
+
+  lambda <- parameters[[.algo.lambda]];
+  stopifnot(!is.null(lambda), is.integer(lambda), lambda > 0L);
+
+  model <- parameters[[.algo.model]];
+  stopifnot(!is.null(model), is.character(model), nchar(model) > 0L);
+
+  op1 <- parameters[[.algo.operator.unary]];
+  stopifnot(!is.null(op1), is.character(op1), nchar(op1) > 0L);
+
+  res <- paste0("h", model, mu);
+  if(lambda != mu) {
+    res <- paste0(res, "+", lambda);
+  }
+  res <- paste0(res, "_", op1);
+
+  return(res);
+}
 
 #' @title Parse the Parameters of an hybrid Estimation of Distribution Algorithm
 #' @description Check whether an algorithm directory is an hybrid Estimation of
@@ -878,7 +937,8 @@ aitoa.algorithm.parameters.heda <- function(algoDir) {
   lambda <- .parse.int(mu.lambda[[2L]]);
   stopifnot(lambda > 0L);
 
-  return(.make.list(c(.algo.algorithm,
+  res <- .make.list(c(.algo.name,
+                      .algo.algorithm,
                       .algo.operator.unary,
                       .algo.restarts,
                       .algo.representation,
@@ -888,6 +948,7 @@ aitoa.algorithm.parameters.heda <- function(algoDir) {
                       .algo.fitness,
                       .algo.is.hybrid,
                       .algo.hybrid.global.search),
+                    "",
                     .algo.algorithm.eda,
                     s[[ofs+1L]],
                     FALSE,
@@ -897,7 +958,11 @@ aitoa.algorithm.parameters.heda <- function(algoDir) {
                     lambda,
                     fitness,
                     TRUE,
-                    .algo.algorithm.eda));
+                    .algo.algorithm.eda);
+  res <- force(res);
+  res[[1L]] <- .aitoa.algorithm.name.heda(res);
+  res <- force(res);
+  return(res);
 }
 
 

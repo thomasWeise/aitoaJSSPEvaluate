@@ -123,7 +123,7 @@ test_that("Test aitoa.algorithm.parameters", {
   r1 <- aitoa.algorithm.parameters.ea("ea_16+16@0d3_1swapR_sequence");
   r2 <- aitoa.algorithm.parameters("ea_16+16@0d3_1swapR_sequence");
   expect_identical(r1, r2);
-  expect_identical(r1$algo.name, "ea16_1swap_30s");
+  expect_identical(r1$algo.name, "ea16_1swap_30");
   expect_identical(r1$algo.algorithm, "ea");
   expect_identical(r1$algo.representation, "default");
   expect_identical(r1$algo.operator.unary, "1swapR");
